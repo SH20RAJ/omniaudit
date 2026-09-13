@@ -93,7 +93,19 @@ curl -fsSL https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/install.sh |
 ```
 
 <p align="center">
-  <img src="omniaudit-geo/public/brand/terminal-demo.png" alt="Instant CLI Installation & Autonomous Audit in Terminal" width="100%" />
+  <img src="omniaudit-geo/public/brand/terminal-demo.png" alt="Instant CLI Installation & Interactive Omni Audit in Terminal" width="100%" />
+</p>
+
+### 🎬 Interactive Terminal Walkthrough & Video Demo (1080p Full HD)
+
+<p align="center">
+  <video src="omniaudit_terminal_demo.mp4" controls width="100%" poster="omniaudit-geo/public/brand/terminal-demo.png">
+    <a href="omniaudit_terminal_demo.mp4">Watch the Full HD Video Demo (omniaudit_terminal_demo.mp4)</a>
+  </video>
+</p>
+
+<p align="center">
+  <em>▶️ <b>Direct Video Link:</b> <a href="omniaudit_terminal_demo.mp4"><code>omniaudit_terminal_demo.mp4</code></a> (32s · High Definition H.264 · Demonstrates interactive <code>omni</code> launcher, live brand audit scorecard, head-to-head competitor benchmark, AI remediation prompt clipboard copy, and 16 golden fixtures).</em>
 </p>
 
 ### Method 2: Cloned Repository (Editable Python Package)
@@ -105,7 +117,7 @@ pip install -e .
 
 ### Method 3: Zero-Install Immediate Execution (Pure Python Standard Library)
 ```bash
-python3 cli.py --url https://example.com
+python3 cli.py https://adobe.com
 ```
 
 ### Method 4: Docker Container
@@ -120,30 +132,39 @@ docker run --rm -p 8000:8000 ghcr.io/sh20raj/omniaudit-geo:stable
 The unified CLI shares the canonical AST engine directly from `skills/`:
 
 ```bash
-# Immediate full site audit (colorized terminal cards)
-omni --url https://example.com
+# 1. Interactive guided launcher (no arguments)
+omni
 
-# Save schema-validated JSON report
-omni audit --url https://example.com --format json --output report.json
+# 2. Immediate full site audit (shorthand URL or --url flag)
+omni https://adobe.com
+omni --url https://adobe.com
 
-# Save formatted Markdown summary
-omni audit --url https://example.com --format markdown --output report.md
+# 3. Head-to-head competitor benchmark (side-by-side comparative table)
+omni compare https://adobe.com https://canva.com
 
-# Run individual specialist skills in isolation
-omni specialist crawl --url https://example.com
-omni specialist structured --url https://example.com
-omni specialist aeo --url https://example.com
-omni specialist freshness --url https://example.com
-omni specialist engagement --url https://example.com
+# 4. Generate AI remediation fix prompt & copy directly to clipboard (Claude / Cursor)
+omni prompt https://adobe.com
 
-# Local server, verification & packaging
+# 5. Run the 16 Golden Benchmarks ground-truth accuracy suite (< 10ms)
+omni benchmark
+
+# 6. Save schema-validated JSON or Markdown report
+omni audit --url https://adobe.com --format json --output report.json
+omni audit --url https://adobe.com --format markdown --output report.md
+
+# 7. Run individual specialist skills in isolation
+omni specialist crawl --url https://adobe.com
+omni specialist structured --url https://adobe.com
+omni specialist aeo --url https://adobe.com
+omni specialist freshness --url https://adobe.com
+omni specialist engagement --url https://adobe.com
+
+# 8. Local web dashboard, verification & packaging
 omni serve --port 8000   # Launch FastAPI + Gradio Web UI
 omni mcp --test          # Run internal MCP protocol self-test
-omni benchmark           # Run 16 Golden Benchmarks with latency telemetry
 omni verify --ci         # Run the unified 6-gate verification loop
 omni package             # Rebuild and sandbox-verify omniaudit-geo-marketplace.zip
 omni lint                # Run enterprise Ruff linter & formatting checks
-omni lint --fix          # Auto-format and resolve fixable style issues
 ```
 
 ---
