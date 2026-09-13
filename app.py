@@ -34,5 +34,5 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=port,
         head=SEO_HEAD_HTML,
-        favicon_path=str(REPO_ROOT / "omniaudit-geo" / "public" / "favicon.svg"),
+        favicon_path=str(REPO_ROOT / "omniaudit-geo" / "public" / "favicon.ico"),
     )

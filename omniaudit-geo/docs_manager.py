@@ -409,7 +409,10 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OmniAudit-GEO Documentation Portal</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,6 +422,10 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
   <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/yaml.min.js"></script>
 
   <style>
     :root {{
@@ -705,20 +712,36 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
       color: #38bdf8;
     }}
     .markdown-body pre {{
-      background: #0f172a;
-      border: 1px solid var(--border-color);
+      background: #0d1117 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 8px;
       padding: 1.2rem;
       margin-bottom: 1.5rem;
       overflow-x: auto;
       position: relative;
     }}
-    .markdown-body pre code {{
-      background: transparent;
+    .markdown-body pre code.hljs {{
+      background: transparent !important;
       padding: 0;
       color: #e2e8f0;
       font-size: 0.86rem;
       line-height: 1.6;
+      font-family: 'JetBrains Mono', monospace;
+    }}
+    .code-lang-badge {{
+      position: absolute;
+      top: 8px;
+      right: 72px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2px 7px;
+      border-radius: 4px;
     }}
     .markdown-body table {{
       width: 100%;
@@ -844,8 +867,8 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
     <div style="display: flex; align-items: center; gap: 1rem;">
       <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
       <a href="/" class="brand-group">
-        <div class="brand-logo">O</div>
-        <div class="brand-title">OmniAudit<span style="color: var(--accent-red);">.GEO</span></div>
+        <img src="/brand/logo.png" alt="OmniAudit-GEO" style="height: 32px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(56,189,248,0.25));" />
+        <div class="brand-title">OmniAudit<span style="color: var(--accent-blue);">.GEO</span></div>
         <div class="brand-badge">Docs</div>
       </a>
     </div>
@@ -989,11 +1012,7 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
       document.title = `${{doc.title}} — OmniAudit-GEO Documentation`;
 
       // Render Markdown
-      marked.setOptions({{
-        highlight: function(code, lang) {{
-          const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-          return hljs.highlight(code, {{ language }}).value;
-        }},
+      marked.use({{
         gfm: true,
         breaks: true,
       }});
@@ -1010,13 +1029,36 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
       const contentEl = document.getElementById('markdownContent');
       contentEl.innerHTML = parsedHtml;
 
-      // Add copy buttons to pre code blocks
+      // Run syntax highlighting & attach badges and copy buttons to all code blocks
       contentEl.querySelectorAll('pre').forEach(pre => {{
+        const code = pre.querySelector('code');
+        if (code) {{
+          try {{
+            hljs.highlightElement(code);
+          }} catch (err) {{
+            console.warn('highlight.js error:', err);
+          }}
+
+          let langName = '';
+          code.classList.forEach(cls => {{
+            if (cls.startsWith('language-')) {{
+              langName = cls.replace('language-', '').toUpperCase();
+            }}
+          }});
+          if (langName) {{
+            const badge = document.createElement('span');
+            badge.className = 'code-lang-badge';
+            badge.textContent = langName;
+            pre.appendChild(badge);
+          }}
+        }}
+
         const btn = document.createElement('button');
         btn.className = 'copy-btn';
         btn.textContent = 'Copy';
         btn.onclick = () => {{
-          navigator.clipboard.writeText(pre.innerText.replace(/^Copy\\n/, ''));
+          const textToCopy = code ? code.innerText : pre.innerText;
+          navigator.clipboard.writeText(textToCopy);
           btn.textContent = 'Copied!';
           setTimeout(() => {{ btn.textContent = 'Copy'; }}, 2000);
         }};

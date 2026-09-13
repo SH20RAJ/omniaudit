@@ -30,8 +30,12 @@ for p in [str(OMNIAUDIT_DIR), str(ORCHESTRATOR_SCRIPTS), str(CRAWL_SCRIPTS), str
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from eval_benchmarks import run_evals
-from schema_validator import validate_report
+try:
+    from eval_benchmarks import run_evals
+    from schema_validator import validate_report
+except ImportError:
+    from scripts.eval_benchmarks import run_evals
+    from scripts.schema_validator import validate_report
 
 from audit_guard import check_rate_limit, execute_guarded_audit, execute_guarded_mcp
 from audit_runner import (
@@ -410,35 +414,67 @@ async def api_docs_content(
     return data
 
 
-# Public static root files (favicons, logos, manifests, SEO robots & sitemaps)
+# Public static root files (brand assets, favicons, manifests, SEO robots & sitemaps)
+@app.get("/brand/{file_name}")
+async def serve_brand_asset(file_name: str):
+    f = PUBLIC_DIR / "brand" / file_name
+    if not f.is_file() or not f.resolve().is_relative_to((PUBLIC_DIR / "brand").resolve()):
+        raise HTTPException(status_code=404, detail="Brand asset not found")
+    media_type = "image/png" if file_name.endswith(".png") else "application/octet-stream"
+    return FileResponse(f, media_type=media_type)
+
+
 @app.get("/favicon.ico")
 async def serve_favicon():
     f = PUBLIC_DIR / "favicon.ico"
-    return FileResponse(f) if f.is_file() else Response(status_code=404)
+    return FileResponse(f, media_type="image/x-icon") if f.is_file() else Response(status_code=404)
+
+
+@app.get("/favicon-16x16.png")
+async def serve_favicon_16():
+    f = PUBLIC_DIR / "favicon-16x16.png"
+    return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
+
+
+@app.get("/favicon-32x32.png")
+async def serve_favicon_32():
+    f = PUBLIC_DIR / "favicon-32x32.png"
+    return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
+
+
+@app.get("/favicon-48x48.png")
+async def serve_favicon_48():
+    f = PUBLIC_DIR / "favicon-48x48.png"
+    return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
 
 
 @app.get("/favicon.svg")
 async def serve_favicon_svg():
-    f = PUBLIC_DIR / "favicon.svg"
-    return FileResponse(f, media_type="image/svg+xml") if f.is_file() else Response(status_code=404)
+    f = PUBLIC_DIR / "favicon-32x32.png"
+    return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
 
 
 @app.get("/logo.svg")
 async def serve_logo():
-    f = PUBLIC_DIR / "logo.svg"
-    return FileResponse(f, media_type="image/svg+xml") if f.is_file() else Response(status_code=404)
+    f = PUBLIC_DIR / "brand" / "logo.png"
+    return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
 
 
 @app.get("/og-image.png")
 async def serve_og():
-    f = PUBLIC_DIR / "og-image.png"
+    f = PUBLIC_DIR / "brand" / "og-image.png"
+    if not f.is_file():
+        f = PUBLIC_DIR / "og-image.png"
     return FileResponse(f, media_type="image/png") if f.is_file() else Response(status_code=404)
 
 
+@app.get("/site.webmanifest")
 @app.get("/manifest.json")
 async def serve_manifest():
-    f = PUBLIC_DIR / "manifest.json"
-    return FileResponse(f, media_type="application/json") if f.is_file() else Response(status_code=404)
+    f = PUBLIC_DIR / "site.webmanifest"
+    if not f.is_file():
+        f = PUBLIC_DIR / "manifest.json"
+    return FileResponse(f, media_type="application/manifest+json") if f.is_file() else Response(status_code=404)
 
 
 @app.get("/robots.txt", response_class=FileResponse)
@@ -490,7 +526,7 @@ app = gr.mount_gradio_app(
     gradio_blocks,
     path="/",
     head=SEO_HEAD_HTML,
-    favicon_path=str(PUBLIC_DIR / "favicon.svg"),
+    favicon_path=str(PUBLIC_DIR / "favicon.ico"),
 )
 
 if __name__ == "__main__":

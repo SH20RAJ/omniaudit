@@ -138,3 +138,15 @@ Unlike conventional linters that only report errors, OmniAudit-GEO dynamically g
 * **Resource Bounds:** HTTP fetches are capped at **5 MB**, timeouts are enforced at **10 seconds**, and redirect chains are limited to a maximum of **5 hops**.
 * **ReDoS Protection:** All regular expressions are anchored and avoid nested polynomial quantifiers.
 * For full details, see the dedicated **[Security Model](security.md)**.
+
+---
+
+## 6. Brand Assets & Visual Identity
+
+The project enforces a single source-of-truth asset architecture for logos, favicons, and social cards:
+
+* **Canonical Master Logo (`omniaudit-geo/public/brand/logo.png`):** High-resolution transparent RGBA PNG representing the official brand lockup.
+* **Derived Brand Mark (`omniaudit-geo/public/brand/logo-mark.png`):** Extracted square icon mark optimized for favicons and app icons without micro-text distortion.
+* **OpenGraph Banner (`omniaudit-geo/public/brand/og-image.png`):** 1200×630 landscape composition for social previews, search cards, and README badges.
+* **Asset Pipeline (`scripts/generate_assets.py`):** Programmatically derives all square resolutions (`favicon-16x16.png`, `favicon-32x32.png`, `favicon-48x48.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, and multi-resolution `favicon.ico`) directly from `logo.png`.
+

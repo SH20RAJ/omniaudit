@@ -529,29 +529,37 @@ def create_gradio_app() -> gr.Blocks:
             with gr.Column():
                 gr.HTML("""
                 <div style="padding: 14px 0 18px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                         <div class="header-badge">
-                            <span style="display: inline-block; width: 6px; height: 6px; background: #eb1000; border-radius: 50%;"></span>
+                            <span style="display: inline-block; width: 6px; height: 6px; background: #38bdf8; border-radius: 50%;"></span>
                             Adobe University Hackathon 2026 · Round 3 CRP
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
+                            <a href="/docs" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #38bdf8; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); padding: 4px 10px; border-radius: 4px;">
+                                📖 Docs Portal
+                            </a>
                             <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit" target="_blank" style="text-decoration: none;">
                                 <img src="https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit&countColor=%23263759&style=flat" alt="Visitors" style="vertical-align: middle; border-radius: 4px;" />
                             </a>
-                            <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #cbd5e1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 3px 10px; border-radius: 4px;">
+                            <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #cbd5e1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 4px;">
                                 ★ GitHub
                             </a>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
-                        <h1 class="brand-title" style="font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -0.03em; color: #ffffff;">
-                            OmniAudit<span style="color:#eb1000;">.GEO</span>
-                        </h1>
-                        <span style="font-size: 0.9rem; font-weight: 600; color: #38bdf8; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 2px 8px; border-radius: 4px;">
-                            agentskills.io Standard
-                        </span>
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <img src="/brand/logo.png" alt="OmniAudit-GEO Logo" style="height: 54px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(56,189,248,0.2));" />
+                        <div>
+                            <div style="display: flex; align-items: baseline; gap: 10px;">
+                                <h1 class="brand-title" style="font-size: 2.1rem; font-weight: 800; margin: 0; letter-spacing: -0.03em; color: #ffffff;">
+                                    OmniAudit<span style="color:#38bdf8;">.GEO</span>
+                                </h1>
+                                <span style="font-size: 0.82rem; font-weight: 600; color: #38bdf8; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 2px 8px; border-radius: 4px;">
+                                    agentskills.io Standard
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <p style="font-size: 0.95rem; color: #94a3b8; margin: 8px 0 12px 0; line-height: 1.5;">
+                    <p style="font-size: 0.95rem; color: #94a3b8; margin: 10px 0 12px 0; line-height: 1.5;">
                         Enterprise Agent Skill Marketplace auditing website <strong>Off-Site AI Discoverability (ACPI)</strong> and <strong>On-Site Visitor Retention (CRS)</strong> using pure Python AST heuristics.
                     </p>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">

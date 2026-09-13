@@ -1,0 +1,20 @@
+{
+  "include": [
+    "omniaudit-geo",
+    "skills",
+    "scripts",
+    "cli.py",
+    "app.py"
+  ],
+  "extraPaths": [
+    ".",
+    "scripts",
+    "omniaudit-geo",
+    "skills/audit-orchestrator/scripts",
+    "skills/crawl-render-audit/scripts",
+    "skills/structured-entity-audit/scripts",
+    "skills/aeo-quotability-audit/scripts",
+    "skills/freshness-corroboration-audit/scripts",
+    "skills/on-site-engagement-audit/scripts"
+  ]
+}

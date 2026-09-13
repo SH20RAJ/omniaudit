@@ -1,6 +1,12 @@
 # OmniAudit-GEO: Enterprise Brand AI-Readiness Marketplace
 
 <p align="center">
+  <a href="https://omniaudit-geo.onrender.com/">
+    <img src="omniaudit-geo/public/brand/og-image.png" alt="OmniAudit-GEO — Make Your Brand Ready for the AI-First Web" width="100%" />
+  </a>
+</p>
+
+<p align="center">
   <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit"><img src="https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit&countColor=%23263759&style=flat" alt="Visitors" /></a>
   <a href="https://github.com/SH20RAJ/omniaudit/actions/workflows/verify.yml"><img src="https://img.shields.io/github/actions/workflow/status/SH20RAJ/omniaudit/verify.yml?branch=main&label=6-Gate%20Verification&style=flat-square&logo=githubactions&logoColor=white" alt="Verification" /></a>
   <a href="https://github.com/SH20RAJ/omniaudit/actions/workflows/publish-container.yml"><img src="https://img.shields.io/github/actions/workflow/status/SH20RAJ/omniaudit/publish-container.yml?branch=main&label=GHCR%20Build&style=flat-square&logo=docker&logoColor=white" alt="Container" /></a>

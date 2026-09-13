@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "timestamp": "2026-09-13T05:30:37Z",
-  "total_elapsed_s": 3.27,
+  "timestamp": "2026-09-13T05:53:55Z",
+  "total_elapsed_s": 2.98,
   "ci_mode": true,
   "tests": {
     "total": 184,
@@ -20,7 +20,7 @@
       "passed": 61,
       "failed": 0,
       "skipped": 0,
-      "elapsed_s": 0.02
+      "elapsed_s": 0.029
     },
     "gate2_core_engine": {
       "success": true,
@@ -28,7 +28,7 @@
       "passed": 95,
       "failed": 0,
       "skipped": 0,
-      "elapsed_s": 0.02
+      "elapsed_s": 0.024
     },
     "gate3_benchmarks": {
       "status": "passed",
@@ -41,8 +41,8 @@
       "precision_pct": 100.0,
       "recall_pct": 100.0,
       "f1_score": 100.0,
-      "avg_latency_ms": 0.41,
-      "total_time_ms": 6.48,
+      "avg_latency_ms": 0.42,
+      "total_time_ms": 6.66,
       "schema_failures": 0,
       "fixtures": [
         {
@@ -52,7 +52,7 @@
           "acpi_score": 84.9,
           "crs_score": 93.0,
           "schema_valid": true,
-          "latency_ms": 0.39,
+          "latency_ms": 0.37,
           "tp": 1,
           "fp": 0,
           "fn": 0
@@ -88,7 +88,7 @@
           "acpi_score": 89.4,
           "crs_score": 91.5,
           "schema_valid": true,
-          "latency_ms": 0.39,
+          "latency_ms": 0.38,
           "tp": 0,
           "fp": 0,
           "fn": 0
@@ -124,7 +124,7 @@
           "acpi_score": 96.4,
           "crs_score": 91.5,
           "schema_valid": true,
-          "latency_ms": 0.35,
+          "latency_ms": 0.36,
           "tp": 0,
           "fp": 0,
           "fn": 0
@@ -136,7 +136,7 @@
           "acpi_score": 90.0,
           "crs_score": 91.5,
           "schema_valid": true,
-          "latency_ms": 0.38,
+          "latency_ms": 0.37,
           "tp": 2,
           "fp": 0,
           "fn": 0
@@ -160,7 +160,7 @@
           "acpi_score": 82.2,
           "crs_score": 83.5,
           "schema_valid": true,
-          "latency_ms": 0.32,
+          "latency_ms": 0.33,
           "tp": 1,
           "fp": 0,
           "fn": 0
@@ -172,7 +172,7 @@
           "acpi_score": 87.0,
           "crs_score": 91.5,
           "schema_valid": true,
-          "latency_ms": 0.32,
+          "latency_ms": 0.33,
           "tp": 1,
           "fp": 0,
           "fn": 0
@@ -196,7 +196,7 @@
           "acpi_score": 89.4,
           "crs_score": 95.5,
           "schema_valid": true,
-          "latency_ms": 0.4,
+          "latency_ms": 0.45,
           "tp": 0,
           "fp": 0,
           "fn": 0
@@ -208,7 +208,7 @@
           "acpi_score": 88.2,
           "crs_score": 90.7,
           "schema_valid": true,
-          "latency_ms": 0.35,
+          "latency_ms": 0.42,
           "tp": 1,
           "fp": 0,
           "fn": 0
@@ -220,7 +220,7 @@
           "acpi_score": 89.4,
           "crs_score": 91.5,
           "schema_valid": true,
-          "latency_ms": 0.33,
+          "latency_ms": 0.36,
           "tp": 0,
           "fp": 0,
           "fn": 0
@@ -232,7 +232,7 @@
           "acpi_score": 87.8,
           "crs_score": 88.9,
           "schema_valid": true,
-          "latency_ms": 0.48,
+          "latency_ms": 0.51,
           "tp": 1,
           "fp": 0,
           "fn": 0
@@ -253,17 +253,17 @@
         "failed": 0,
         "total": 28,
         "skipped": 0,
-        "elapsed_s": 0.534
+        "elapsed_s": 0.518
       },
       "engine": {
         "status": "passed",
-        "routes_count": 35
+        "routes_count": 40
       }
     },
     "gate6_package": {
       "status": "passed",
       "archive_path": "/Users/shaswatraj/Desktop/adobe-hackathon-2026/omniaudit-geo-marketplace.zip",
-      "archive_bytes": 87946
+      "archive_bytes": 88017
     }
   }
 }

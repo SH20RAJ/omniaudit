@@ -8,7 +8,7 @@ Answer Engine Optimization (AEO), Schema.org JSON-LD graphs, OpenGraph, and Twit
 SEO_TITLE = "OmniAudit-GEO — Enterprise Brand AI-Readiness & GEO Engine"
 SEO_DESCRIPTION = "Diagnose website AI discoverability barriers (robots.txt AI bot policies, hydration gaps, Schema.org entity graphs, AEO quotability) and on-site visitor retention. Local deterministic AST analysis executes in sub-millisecond benchmark conditions; real website audit latency depends on network and target response time."
 SEO_CANONICAL_URL = "https://omniaudit-geo.onrender.com/"
-SEO_OG_IMAGE = "https://omniaudit-geo.onrender.com/og-image.png"
+SEO_OG_IMAGE = "https://omniaudit-geo.onrender.com/brand/og-image.png"
 
 SCHEMA_JSON_LD = """{
   "@context": "https://schema.org",
@@ -21,7 +21,7 @@ SCHEMA_JSON_LD = """{
       "operatingSystem": "All",
       "url": "https://omniaudit-geo.onrender.com/",
       "description": "Enterprise Brand AI-Readiness and Generative Engine Optimization (GEO) audit engine and Anthropic Model Context Protocol (MCP) server.",
-      "image": "https://omniaudit-geo.onrender.com/og-image.png",
+      "image": "https://omniaudit-geo.onrender.com/brand/og-image.png",
       "softwareVersion": "1.0.0",
       "offers": {
         "@type": "Offer",
@@ -48,7 +48,7 @@ SCHEMA_JSON_LD = """{
       "@id": "https://omniaudit-geo.onrender.com/#organization",
       "name": "OmniAudit-GEO",
       "url": "https://omniaudit-geo.onrender.com/",
-      "logo": "https://omniaudit-geo.onrender.com/logo.svg",
+      "logo": "https://omniaudit-geo.onrender.com/brand/logo.png",
       "sameAs": [
         "https://github.com/SH20RAJ/omniaudit"
       ]
@@ -127,10 +127,11 @@ SEO_HEAD_HTML = f"""  <title>{SEO_TITLE}</title>
   <meta name="twitter:image" content="{SEO_OG_IMAGE}" />
 
   <!-- Icons & Web App Manifest -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="alternate icon" href="/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0b0f19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

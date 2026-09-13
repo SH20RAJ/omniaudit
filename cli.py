@@ -260,7 +260,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
             server_name=host,
             server_port=port,
             head=SEO_HEAD_HTML,
-            favicon_path=str(REPO_ROOT / "omniaudit-geo" / "public" / "favicon.svg"),
+            favicon_path=str(REPO_ROOT / "omniaudit-geo" / "public" / "favicon.ico"),
         )
         return 0
 
