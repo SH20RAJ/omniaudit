@@ -93,24 +93,13 @@ curl -fsSL https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/install.sh |
 ```
 
 <p align="center">
-  <img src="omniaudit-geo/public/brand/terminal-demo.png" alt="Instant CLI Installation & Interactive Omni Audit in Terminal" width="100%" />
+  <a href="https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/omniaudit_terminal_demo.gif">
+    <img src="https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/omniaudit_terminal_demo.gif" alt="OmniAudit-GEO Interactive Terminal Demonstration" width="100%" />
+  </a>
 </p>
 
-### 🎬 Interactive Terminal Walkthrough & Video Demo (1080p Full HD)
-
 <p align="center">
-  <video src="omniaudit_terminal_demo.mp4" controls width="100%" poster="omniaudit-geo/public/brand/terminal-demo.png">
-    <a href="omniaudit_terminal_demo.mp4">Watch the Full HD Video Demo (omniaudit_terminal_demo.mp4)</a>
-  </video>
-</p>
-
-
-https://github.com/user-attachments/assets/24977476-78bc-4478-a78d-5088e13b6c26
-
-
-
-<p align="center">
-  <em>▶️ <b>Direct Video Link:</b> <a href="omniaudit_terminal_demo.mp4"><code>omniaudit_terminal_demo.mp4</code></a> (32s · High Definition H.264 · Demonstrates interactive <code>omni</code> launcher, live brand audit scorecard, head-to-head competitor benchmark, AI remediation prompt clipboard copy, and 16 golden fixtures).</em>
+  <em>▶️ <b>Live Terminal Walkthrough:</b> Interactive <code>omni</code> launcher, live brand audit scorecard, head-to-head competitor benchmark, AI remediation prompt clipboard copy, and 16 golden fixtures. (<a href="https://github.com/user-attachments/assets/24977476-78bc-4478-a78d-5088e13b6c26">Watch Video Stream</a> · <a href="https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/omniaudit_terminal_demo.mp4">Download 1080p MP4</a>)</em>
 </p>
 
 ### Method 2: Cloned Repository (Editable Python Package)
