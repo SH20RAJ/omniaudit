@@ -224,8 +224,8 @@
 ```
 
 ### 2. Archive Specifications
-* **Size:** **0.08 MB** (88 KB) — Well within the 50 MB Unstop limit ($\approx 0.16\%$ of maximum allowable size).
-* **Total Files:** 68 files
+* **Size:** **0.09 MB** (89 KB) — Well within the 50 MB Unstop limit ($\approx 0.17\%$ of maximum allowable size).
+* **Total Files:** 69 files (6 skills, 1 entrypoint, references, scripts, schemas, and test invariants)
 * **Root Directory Structure:**
   ```
   omniaudit-geo-marketplace.zip
