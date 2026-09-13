@@ -23,6 +23,14 @@ DOCS_REGISTRY: list[dict[str, Any]] = [
     # 1. Canonical Engineering Guides
     # -------------------------------------------------------------
     {
+        "id": "beginners",
+        "title": "Beginner's Guide (ELI5)",
+        "icon": "📘",
+        "category": "Canonical Guides",
+        "rel_path": "beginners.md",
+        "description": "High-clarity introductory guide to Generative Engine Optimization, ACPI & CRS scores, and how OmniAudit-GEO works.",
+    },
+    {
         "id": "getting-started",
         "title": "Getting Started",
         "icon": "🚀",

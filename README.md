@@ -24,8 +24,8 @@
 > **Adobe University Hackathon 2026 (CRP) — Round 3 Official Team Submission**<br>
 > **Team:** Shaswat Raj ([@sh20raj](https://github.com/sh20raj)) & Prithvi ([@chikolavosaki-sys](https://github.com/chikolavosaki-sys))<br>
 > **Challenge:** [Unstop - Adobe University Hackathon 2026](https://unstop.com/hackathons/crp-adobe-university-hackathon-2026-adobe-1715333)<br>
-> **Live Web Application & API:** [https://omniaudit-geo.onrender.com/](https://omniaudit-geo.onrender.com/)<br>
-> **Interactive Documentation Portal:** [https://omniaudit-geo.onrender.com/docs](https://omniaudit-geo.onrender.com/docs)
+> **Interactive Documentation Portal:** [https://omniaudit-geo.onrender.com/docs](https://omniaudit-geo.onrender.com/docs)<br>
+> **New to GEO & AEO? Start here:** [📘 Beginner's Guide (ELI5)](./beginners.md) | [🏆 Jury Pitch & Defense Guide](./pitch.md)
 
 ---
 
