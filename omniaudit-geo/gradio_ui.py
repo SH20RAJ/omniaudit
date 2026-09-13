@@ -29,8 +29,10 @@ for p in [str(ORCHESTRATOR_SCRIPTS), str(CRAWL_SCRIPTS), str(ROOT_SCRIPTS), str(
         sys.path.insert(0, p)
 
 import re
+import tempfile
 
 from eval_benchmarks import run_evals
+from scoring import compute_scores
 
 from audit_guard import (
     execute_guarded_audit,
@@ -220,7 +222,487 @@ def _get_client_ip(request: gr.Request | None) -> str:
     return "local"
 
 
-def perform_full_audit(url: str, request: gr.Request | None = None) -> tuple[str, str, str, str, dict[str, Any]]:
+def generate_ai_prompt(report: dict[str, Any]) -> str:
+    """Generates an actionable, copy-paste LLM prompt for Claude, Cursor, or ChatGPT to fix detected issues."""
+    if not report or report.get("error"):
+        return "Run an audit to generate an AI remediation prompt."
+
+    site = report.get("site", "target-site.com")
+    audited_at = report.get("audited_at", "")
+    metrics = report.get("metrics", {})
+    acpi = float(metrics.get("acpi_score", 0.0))
+    crs = float(metrics.get("crs_score", 0.0))
+    findings = report.get("findings", [])
+    recs = report.get("proactive_recommendations", [])
+    summary = report.get("summary", {})
+
+    lines = [
+        "# 🛠️ OmniAudit-GEO: AI Search (GEO) & Visitor Retention (CRS) Fix Prompt",
+        "",
+        f"**Target Domain:** `{site}`",
+        f"**Audited At:** `{audited_at}`",
+        f"**Current Baseline Scores:** ACPI: **{acpi:.1f}/100** (Discoverability) | CRS: **{crs:.1f}/100** (Retention)",
+        f"**Total Defects Detected:** {summary.get('total_findings', len(findings))} "
+        f"({summary.get('critical', 0)} Critical, {summary.get('high', 0)} High, {summary.get('medium', 0)} Medium, {summary.get('low', 0)} Low)",
+        "",
+        "---",
+        "",
+        "### 🎯 Your Objective",
+        f"You are a Senior Full-Stack & Generative Engine Optimization (GEO/AEO) Engineer. "
+        f"Your mission is to resolve every diagnostic defect identified below on `{site}` to achieve ACPI ≥ 95.0 and CRS ≥ 95.0.",
+        "",
+        "### 📋 Detected Diagnostic Defects & Required Remediations:",
+    ]
+
+    for i, f in enumerate(findings, 1):
+        fid = f.get("id", f"F-{i:03d}")
+        sev = str(f.get("severity", "medium")).upper()
+        cat = f.get("category", "general")
+        title = f.get("title", "")
+        remediation = f.get("remediation", "Inspect and fix.")
+        evidence = f.get("evidence", "")
+        ev_repr = ""
+        if evidence and evidence != "{}":
+            if isinstance(evidence, (dict, list)):
+                ev_repr = json.dumps(evidence)
+            else:
+                ev_repr = str(evidence).strip()
+            if len(ev_repr) > 180:
+                ev_repr = ev_repr[:180] + "..."
+
+        lines.append(f"{i}. **[{sev}] `{fid}`: {title}**")
+        lines.append(f"   - **Diagnostic Category:** `{cat}`")
+        lines.append(f"   - **Required Remediation:** {remediation}")
+        if ev_repr:
+            lines.append(f"   - **AST Evidence:** `{ev_repr}`")
+
+    if recs:
+        lines.append("")
+        lines.append("### 💡 Beyond-Defect Strategic Recommendations:")
+        for r in recs:
+            prio = r.get("priority", "MEDIUM").upper()
+            lines.append(
+                f"- **[{prio}] {r.get('title', '')}:** {r.get('recommendation', '')} *(Expected Impact: {r.get('impact', '')})*"
+            )
+
+    lines.extend(
+        [
+            "",
+            "---",
+            "",
+            "### 💻 Concrete Implementation Requirements:",
+            "1. **Robots.txt Updates:** If crawlability issues were detected, provide the exact `robots.txt` configuration explicitly allowing AI crawlers (`GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, `Applebot-Extended`).",
+            '2. **Schema.org JSON-LD:** Output copy-paste `<script type="application/ld+json">` blocks for `Organization`, `WebSite`, and disambiguating `sameAs` entity links to Wikipedia/Wikidata authorities.',
+            "3. **AEO Quotability & Headings:** Rewrite top sections into atomic, self-contained 20–50 word factual statements answering search intent directly with semantic H1–H3 hierarchy.",
+            "4. **Above-the-Fold Value Clarity (CRS):** Provide revised hero headline, sub-headline, and high-contrast primary call-to-action (CTA) button copy to drop bounce rates.",
+            "5. **Clean Code:** Return syntactically valid code blocks, ready to drop into production.",
+        ]
+    )
+
+    return "\n".join(lines)
+
+
+def generate_markdown_report(report: dict[str, Any]) -> str:
+    """Generates a complete, publication-ready GitHub-flavored Markdown audit report."""
+    if not report or report.get("error"):
+        return "# Audit Report\n\nNo report data available."
+
+    site = report.get("site", "target-site.com")
+    audited_at = report.get("audited_at", "")
+    metrics = report.get("metrics", {})
+    acpi = float(metrics.get("acpi_score", 0.0))
+    crs = float(metrics.get("crs_score", 0.0))
+    summary = report.get("summary", {})
+    findings = report.get("findings", [])
+    recs = report.get("proactive_recommendations", [])
+
+    rating_acpi = (
+        "EXCELLENT" if acpi >= 90 else ("GOOD" if acpi >= 75 else ("NEEDS WORK" if acpi >= 60 else "CRITICAL"))
+    )
+    rating_crs = "EXCELLENT" if crs >= 90 else ("GOOD" if crs >= 75 else ("NEEDS WORK" if crs >= 60 else "CRITICAL"))
+
+    lines = [
+        "# 🛡️ OmniAudit-GEO Brand AI-Readiness Audit Report",
+        "",
+        f"- **Audited Domain:** `{site}`",
+        f"- **Audit Date:** `{audited_at}`",
+        "- **Standard Compliance:** `agentskills.io` · Anthropic Model Context Protocol (MCP)",
+        "- **Engine Execution Mode:** 100% Deterministic Local Python AST (Zero External Cloud API Dependencies)",
+        "",
+        "---",
+        "",
+        "## 📊 Executive Scorecard",
+        "",
+        "| Metric Axis | Score | Rating | Focus & Intent |",
+        "| :--- | :---: | :---: | :--- |",
+        f"| **ACPI** (AI Citation Probability Index) | **{acpi:.1f} / 100** | `{rating_acpi}` | Machine discoverability, robots.txt, Schema.org entities, atomic quotability |",
+        f"| **CRS** (Cognitive Retention Score) | **{crs:.1f} / 100** | `{rating_crs}` | Human orientation, value-prop clarity, reading ease, actionability |",
+        "",
+        f"**Defect Distribution:** Total `{summary.get('total_findings', len(findings))}` findings "
+        f"(🚨 Critical: `{summary.get('critical', 0)}`, ⚠️ High: `{summary.get('high', 0)}`, ⚡ Medium: `{summary.get('medium', 0)}`, ℹ️ Low: `{summary.get('low', 0)}`)",
+        "",
+        "---",
+        "",
+        "## 📋 Proactive Strategic Recommendations",
+        "",
+    ]
+
+    if recs:
+        for r in recs:
+            lines.append(f"### 💡 {r.get('title', '')} (`{r.get('priority', 'MEDIUM').upper()}` Priority)")
+            lines.append(f"- **Recommendation:** {r.get('recommendation', '')}")
+            lines.append(f"- **Projected Impact:** {r.get('impact', '')}")
+            lines.append("")
+    else:
+        lines.append("No high-priority recommendations detected.\n")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 🔍 Detailed Diagnostic Findings & AST Evidence",
+            "",
+        ]
+    )
+
+    if findings:
+        for f in findings:
+            fid = f.get("id", "F-???")
+            sev = str(f.get("severity", "medium")).upper()
+            cat = f.get("category", "general")
+            title = f.get("title", "")
+            remediation = f.get("remediation", "")
+            evidence = f.get("evidence", "")
+
+            lines.append(f"### `[{sev}]` {fid}: {title}")
+            lines.append(f"- **Category:** `{cat}`")
+            if remediation:
+                lines.append(f"- **Remediation:** {remediation}")
+            if evidence and evidence != "{}":
+                ev_str = json.dumps(evidence, indent=2) if isinstance(evidence, (dict, list)) else str(evidence).strip()
+                lines.append(f"- **Evidence:**\n```json\n{ev_str}\n```")
+            lines.append("")
+    else:
+        lines.append("✓ Clean audit. No defects identified across tested heuristic gates.\n")
+
+    lines.extend(
+        [
+            "---",
+            "*Report generated automatically by OmniAudit-GEO · Adobe University Hackathon 2026*",
+        ]
+    )
+
+    return "\n".join(lines)
+
+
+def export_md_file(report: dict[str, Any]) -> str | None:
+    """Exports audit report as downloadable Markdown file."""
+    if not report or not report.get("site"):
+        return None
+    content = generate_markdown_report(report)
+    site = re.sub(r"[^a-zA-Z0-9_\-]", "_", report.get("site", "audit"))
+    file_path = os.path.join(tempfile.gettempdir(), f"omniaudit_{site}_report.md")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    return file_path
+
+
+def export_json_file(report: dict[str, Any]) -> str | None:
+    """Exports audit report as downloadable verified JSON file."""
+    if not report or not report.get("site"):
+        return None
+    site = re.sub(r"[^a-zA-Z0-9_\-]", "_", report.get("site", "audit"))
+    file_path = os.path.join(tempfile.gettempdir(), f"omniaudit_{site}_report.json")
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+    return file_path
+
+
+def select_high_critical_findings(report: dict[str, Any]) -> Any:
+    """Selects all critical and high findings in the What-If simulation CheckboxGroup."""
+    if not report or not report.get("findings"):
+        return gr.update(value=[])
+    selected = []
+    for f in report.get("findings", []):
+        sev = str(f.get("severity", "medium")).lower()
+        if sev in ("critical", "high"):
+            label = f"[{sev.upper()}] {f.get('id', 'F-???')}: {f.get('title', '')}"
+            selected.append(label)
+    return gr.update(value=selected)
+
+
+def run_what_if_simulation(report: dict[str, Any], selected_labels: list[str]) -> str:
+    """Re-calculates projected ACPI & CRS scores excluding user-selected resolved findings."""
+    if not report or "metrics" not in report:
+        return "<div style='color:#94a3b8; padding:8px 0;'>Please run an audit first before simulating fixes.</div>"
+
+    orig_acpi = float(report.get("metrics", {}).get("acpi_score", 0.0))
+    orig_crs = float(report.get("metrics", {}).get("crs_score", 0.0))
+    findings = report.get("findings", [])
+
+    if not findings:
+        return "<div style='color:#10b981; padding:8px 0;'>✓ No defects detected on this target. Score is already at peak rating.</div>"
+
+    resolved_ids: set[str] = set()
+    for label in selected_labels:
+        match = re.search(r"\]\s*([A-Za-z0-9_\-]+):", label)
+        if match:
+            resolved_ids.add(match.group(1))
+        else:
+            for f in findings:
+                fid = f.get("id", "")
+                if fid and fid in label:
+                    resolved_ids.add(fid)
+
+    if not resolved_ids:
+        return """
+        <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8;">
+            No defects selected. Select one or more defects above and click <strong>⚡ Re-calculate Projected Scores</strong>.
+        </div>
+        """
+
+    remaining = [f for f in findings if f.get("id") not in resolved_ids]
+    sim_scores = compute_scores(remaining)
+    sim_acpi = float(sim_scores.get("acpi_score", orig_acpi))
+    sim_crs = float(sim_scores.get("crs_score", orig_crs))
+
+    acpi_delta = sim_acpi - orig_acpi
+    crs_delta = sim_crs - orig_crs
+
+    acpi_delta_str = f"+{acpi_delta:.1f}" if acpi_delta > 0 else f"{acpi_delta:.1f}"
+    crs_delta_str = f"+{crs_delta:.1f}" if crs_delta > 0 else f"{crs_delta:.1f}"
+    acpi_color = "#10b981" if acpi_delta > 0 else "#94a3b8"
+    crs_color = "#10b981" if crs_delta > 0 else "#94a3b8"
+
+    return f"""
+    <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 16px 18px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 1rem; font-weight: 700; color: #f8fafc;">
+                📈 Simulation Impact: {len(resolved_ids)} of {len(findings)} Defects Resolved
+            </div>
+            <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 10px; border-radius: 12px; font-weight: 700;">
+                PROJECTED LIFT
+            </span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">ACPI · AI Discoverability</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 4px 0;">
+                    {orig_acpi:.1f} ➔ <span style="color: #10b981;">{sim_acpi:.1f}</span>
+                </div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: {acpi_color};">Net Gain: {acpi_delta_str} pts</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">CRS · Visitor Retention</div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #ffffff; margin: 4px 0;">
+                    {orig_crs:.1f} ➔ <span style="color: #3b82f6;">{sim_crs:.1f}</span>
+                </div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: {crs_color};">Net Gain: {crs_delta_str} pts</div>
+            </div>
+        </div>
+        <div style="font-size: 0.8rem; color: #94a3b8;">
+            <strong>Resolved IDs:</strong> {", ".join(sorted(resolved_ids))}
+        </div>
+    </div>
+    """
+
+
+def run_competitor_comparison(
+    url_a: str, url_b: str, request: gr.Request | None = None
+) -> tuple[str, str, str, str, str]:
+    """Runs concurrent/sequential audits against both URLs and generates head-to-head analysis."""
+    client_ip = _get_client_ip(request)
+    if not url_a or not url_a.strip() or not url_b or not url_b.strip():
+        return (
+            "<div style='color:#ef4444; padding:10px;'>Please provide both Target Website and Competitor Website URLs.</div>",
+            "",
+            "",
+            "",
+            "Please enter two valid URLs to generate competitor comparison.",
+        )
+
+    t0_a = time.perf_counter()
+    rep_a = execute_guarded_audit(url_a.strip(), client_ip=client_ip)
+    lat_a = time.perf_counter() - t0_a
+
+    t0_b = time.perf_counter()
+    rep_b = execute_guarded_audit(url_b.strip(), client_ip=client_ip)
+    lat_b = time.perf_counter() - t0_b
+
+    site_a = rep_a.get("site", url_a)
+    site_b = rep_b.get("site", url_b)
+
+    if rep_a.get("error") or rep_b.get("error"):
+        err_a = rep_a.get("error", "OK")
+        err_b = rep_b.get("error", "OK")
+        return (
+            f"<div style='color:#ef4444; padding:12px; background:rgba(239,68,68,0.1); border-radius:8px;'>Comparison Notice — Site A: {err_a} | Site B: {err_b}</div>",
+            "",
+            "",
+            "",
+            f"**Notice during comparison:** Site A ({site_a}): `{err_a}` | Site B ({site_b}): `{err_b}`",
+        )
+
+    acpi_a = float(rep_a.get("metrics", {}).get("acpi_score", 0.0))
+    crs_a = float(rep_a.get("metrics", {}).get("crs_score", 0.0))
+    tot_a = rep_a.get("summary", {}).get("total_findings", 0)
+    crit_a = rep_a.get("summary", {}).get("critical", 0)
+
+    acpi_b = float(rep_b.get("metrics", {}).get("acpi_score", 0.0))
+    crs_b = float(rep_b.get("metrics", {}).get("crs_score", 0.0))
+    tot_b = rep_b.get("summary", {}).get("total_findings", 0)
+    crit_b = rep_b.get("summary", {}).get("critical", 0)
+
+    comp_a = (0.6 * acpi_a) + (0.4 * crs_a)
+    comp_b = (0.6 * acpi_b) + (0.4 * crs_b)
+
+    diff = comp_a - comp_b
+    if diff > 0.5:
+        winner_html = f"""
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981;">🏆 {site_a} LEADS COMPETITIVE AI READINESS</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; margin-top: 4px;">
+                Outperforms {site_b} by <strong>+{diff:.1f} composite points</strong> (Composite: {comp_a:.1f} vs {comp_b:.1f})
+            </div>
+        </div>
+        """
+    elif diff < -0.5:
+        winner_html = f"""
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 1.25rem; font-weight: 800; color: #60a5fa;">🏆 {site_b} LEADS COMPETITIVE AI READINESS</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; margin-top: 4px;">
+                Outperforms {site_a} by <strong>+{abs(diff):.1f} composite points</strong> (Composite: {comp_b:.1f} vs {comp_a:.1f})
+            </div>
+        </div>
+        """
+    else:
+        winner_html = f"""
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 1.25rem; font-weight: 800; color: #f59e0b;">🤝 DEAD HEAT COMPETITIVE BENCHMARK</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; margin-top: 4px;">
+                Both domains demonstrate comparable AI search readiness ({comp_a:.1f} vs {comp_b:.1f} composite points).
+            </div>
+        </div>
+        """
+
+    def _render_comp_card(
+        site: str, acpi: float, crs: float, tot: int, crit: int, lat: float, border_color: str
+    ) -> str:
+        return f"""
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-top: 4px solid {border_color}; border-radius: 12px; padding: 18px 16px; text-align: center;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 10px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{site}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0;">
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">ACPI · Discoverability</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 2px;">{acpi:.1f}</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">CRS · Retention</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #3b82f6; margin-top: 2px;">{crs:.1f}</div>
+                </div>
+            </div>
+            <div style="font-size: 0.82rem; color: #94a3b8;">
+                Defects: <strong style="color:#f59e0b;">{tot}</strong> (Critical: <strong style="color:#ef4444;">{crit}</strong>) · Latency: <strong>{lat:.2f}s</strong>
+            </div>
+        </div>
+        """
+
+    card_a = _render_comp_card(site_a, acpi_a, crs_a, tot_a, crit_a, lat_a, "#10b981")
+    card_b = _render_comp_card(site_b, acpi_b, crs_b, tot_b, crit_b, lat_b, "#3b82f6")
+
+    def _cell_winner(val_a: float, val_b: float, higher_better: bool = True) -> tuple[str, str]:
+        if abs(val_a - val_b) < 0.1:
+            return "#cbd5e1", "#cbd5e1"
+        is_a_win = (val_a > val_b) if higher_better else (val_a < val_b)
+        return ("#10b981; font-weight: 700;", "#94a3b8") if is_a_win else ("#94a3b8", "#10b981; font-weight: 700;")
+
+    c_acpi_a, c_acpi_b = _cell_winner(acpi_a, acpi_b, True)
+    c_crs_a, c_crs_b = _cell_winner(crs_a, crs_b, True)
+    c_tot_a, c_tot_b = _cell_winner(float(tot_a), float(tot_b), False)
+    c_crit_a, c_crit_b = _cell_winner(float(crit_a), float(crit_b), False)
+    c_lat_a, c_lat_b = _cell_winner(lat_a, lat_b, False)
+
+    matrix_html = f"""
+    <div style="overflow-x: auto; margin-top: 14px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 0.78rem; text-transform: uppercase;">
+                    <th style="padding: 10px 12px;">Evaluation Dimension</th>
+                    <th style="padding: 10px 12px; text-align: center;">{site_a}</th>
+                    <th style="padding: 10px 12px; text-align: center;">{site_b}</th>
+                    <th style="padding: 10px 12px; text-align: center;">Leader</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 10px 12px; font-weight: 600;">🤖 ACPI (AI Citation Probability)</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_acpi_a};">{acpi_a:.1f} / 100</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_acpi_b};">{acpi_b:.1f} / 100</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700;">{"Tie" if abs(acpi_a - acpi_b) < 0.1 else (site_a if acpi_a > acpi_b else site_b)}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 10px 12px; font-weight: 600;">🎯 CRS (Cognitive Visitor Retention)</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_crs_a};">{crs_a:.1f} / 100</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_crs_b};">{crs_b:.1f} / 100</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700;">{"Tie" if abs(crs_a - crs_b) < 0.1 else (site_a if crs_a > crs_b else site_b)}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 10px 12px; font-weight: 600;">🚨 Critical Architectural Defects</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_crit_a};">{crit_a}</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_crit_b};">{crit_b}</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700;">{"Tie" if crit_a == crit_b else (site_a if crit_a < crit_b else site_b)}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <td style="padding: 10px 12px; font-weight: 600;">📋 Total Diagnostic Findings</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_tot_a};">{tot_a}</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_tot_b};">{tot_b}</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700;">{"Tie" if tot_a == tot_b else (site_a if tot_a < tot_b else site_b)}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 12px; font-weight: 600;">⚡ AST Diagnostic Latency</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_lat_a};">{lat_a:.2f}s</td>
+                    <td style="padding: 10px 12px; text-align: center; color: {c_lat_b};">{lat_b:.2f}s</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700;">{site_a if lat_a < lat_b else site_b}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    """
+
+    leader_acpi = site_a if acpi_a >= acpi_b else site_b
+    leader_crs = site_a if crs_a >= crs_b else site_b
+    max_acpi = max(acpi_a, acpi_b)
+    min_acpi = min(acpi_a, acpi_b)
+    max_crs = max(crs_a, crs_b)
+    min_crs = min(crs_a, crs_b)
+
+    rec_item_a = (
+        "Resolve critical crawl blocks in robots.txt immediately to prevent generative assistant exclusion."
+        if crit_a > 0
+        else "Crawlability is clean; focus on Schema.org entity disambiguation with sameAs links."
+    )
+    rec_item_b = (
+        "Expand atomic fact answer density under semantic H2 headings to overtake competitor."
+        if acpi_a <= acpi_b
+        else "Maintain quote density advantage by keeping 2026 freshness signals updated."
+    )
+
+    insights_md = f"""
+### 💡 Strategic Competitive Positioning & Takeaways
+
+* **AI Citation Leader:** **`{leader_acpi}`** demonstrates stronger off-site AI discoverability ({max_acpi:.1f} vs {min_acpi:.1f} ACPI). It is significantly more likely to be cited by Perplexity, ChatGPT Search, and Claude.
+* **Visitor Retention Leader:** **`{leader_crs}`** has superior on-site landing page clarity ({max_crs:.1f} vs {min_crs:.1f} CRS) with lower bounce risk for referred visitors.
+* **Tactical Advice for `{site_a}`:**
+  * {rec_item_a}
+  * {rec_item_b}
+"""
+
+    return winner_html, card_a, card_b, matrix_html, insights_md
+
+
+def perform_full_audit(
+    url: str, request: gr.Request | None = None
+) -> tuple[str, str, str, str, dict[str, Any], str, str, Any, str]:
     """Executes the master audit orchestrator on the target URL via the guarded execution service."""
     client_ip = _get_client_ip(request)
     start_time = time.perf_counter()
@@ -237,6 +719,10 @@ def perform_full_audit(url: str, request: gr.Request | None = None) -> tuple[str
             f"<div style='color:#ef4444;'>Audit execution halted by guard layer: {err_msg}</div>",
             "No recommendations generated.",
             report,
+            f"Error: {err_msg}",
+            f"# Audit Error\n\n{err_msg}",
+            gr.update(choices=[], value=[]),
+            f"<div style='color:#ef4444;'>Simulation unavailable: {err_msg}</div>",
         )
 
     acpi = report.get("metrics", {}).get("acpi_score", 0.0)
@@ -274,11 +760,30 @@ def perform_full_audit(url: str, request: gr.Request | None = None) -> tuple[str
     </div>
     """
 
-    findings_html = render_findings_html(report.get("findings", []))
+    findings = report.get("findings", [])
+    findings_html = render_findings_html(findings)
     recs_html = render_proactive_recs(report.get("proactive_recommendations", []))
     summary_text = f"**Target Site:** `{report.get('site', clean_url)}` | **Audited At:** `{report.get('audited_at', '')}` | **Spec:** `agentskills.io`"
 
-    return metrics_html, summary_text, findings_html, recs_html, report
+    ai_prompt = generate_ai_prompt(report)
+    md_report = generate_markdown_report(report)
+
+    sim_choices = [
+        f"[{f.get('severity', 'medium').upper()}] {f.get('id', 'F-???')}: {f.get('title', '')}" for f in findings
+    ]
+    sim_initial_html = "<div style='color:#94a3b8; font-size:0.9rem; padding:8px 0;'>Select defects above and click <strong>⚡ Re-calculate Projected Scores</strong> to simulate impact.</div>"
+
+    return (
+        metrics_html,
+        summary_text,
+        findings_html,
+        recs_html,
+        report,
+        ai_prompt,
+        md_report,
+        gr.update(choices=sim_choices, value=[]),
+        sim_initial_html,
+    )
 
 
 def perform_specialist_audit(
@@ -619,13 +1124,159 @@ def create_gradio_app() -> gr.Blocks:
                             value="<div style='color:#94a3b8; font-size:0.9rem;'>Detailed findings will render here after running an audit.</div>"
                         )
 
+                # -----------------------------------------------------------
+                # Interactive "What-If" Fix Simulator
+                # -----------------------------------------------------------
+                with gr.Accordion("🔧 Interactive 'What-If' Fix Simulator (Impact Predictor)", open=True):
+                    gr.Markdown(
+                        "Check off detected defects below to simulate: *'If I resolve these issues, what will my projected ACPI and CRS scores be?'*"
+                    )
+                    sim_checkboxes = gr.CheckboxGroup(
+                        choices=[],
+                        value=[],
+                        label="Detected Defects (Select items to simulate resolving)",
+                    )
+                    with gr.Row():
+                        sim_btn = gr.Button("⚡ Re-calculate Projected Scores", variant="primary", scale=2)
+                        sim_select_all_btn = gr.Button("Select All High & Critical", variant="secondary", scale=1)
+                        sim_reset_btn = gr.Button("Reset Selection", variant="secondary", scale=1)
+                    sim_results_html = gr.HTML(
+                        value="<div style='color:#94a3b8; font-size:0.9rem; padding:8px 0;'>Select defects and click 'Re-calculate' to project your improved scores.</div>"
+                    )
+
+                # -----------------------------------------------------------
+                # AI Remediation Prompt & Export Center
+                # -----------------------------------------------------------
+                with gr.Accordion("🚀 AI Action Prompt & Export Center", open=True):
+                    with gr.Row():
+                        with gr.Column(scale=1):
+                            gr.Markdown("#### 🤖 Instant AI Fix Prompt (Copy & Paste into Claude, Cursor, ChatGPT)")
+                            ai_prompt_box = gr.Code(
+                                label="AI Remediation Prompt (Click Copy Icon in Top-Right)",
+                                language="markdown",
+                                lines=14,
+                                interactive=False,
+                            )
+                        with gr.Column(scale=1):
+                            gr.Markdown("#### 📄 Export Full Markdown Report")
+                            md_report_box = gr.Code(
+                                label="Markdown Report (Click Copy Icon in Top-Right)",
+                                language="markdown",
+                                lines=14,
+                                interactive=False,
+                            )
+                    with gr.Row():
+                        download_md_btn = gr.Button("📥 Download Markdown Report (.md)", variant="secondary", scale=1)
+                        download_json_btn = gr.Button("📥 Download JSON Report (.json)", variant="secondary", scale=1)
+                    file_download = gr.File(label="Exported Report Download", interactive=False)
+
                 with gr.Accordion("📦 Raw Standard JSON Report (Conforms to references/audit_schema.json)", open=False):
                     raw_json = gr.JSON(value={}, label="Verified Audit Schema Output")
 
                 audit_btn.click(
                     fn=perform_full_audit,
                     inputs=[url_input],
-                    outputs=[audit_status, summary_meta, findings_output, recs_output, raw_json],
+                    outputs=[
+                        audit_status,
+                        summary_meta,
+                        findings_output,
+                        recs_output,
+                        raw_json,
+                        ai_prompt_box,
+                        md_report_box,
+                        sim_checkboxes,
+                        sim_results_html,
+                    ],
+                )
+
+                sim_btn.click(
+                    fn=run_what_if_simulation,
+                    inputs=[raw_json, sim_checkboxes],
+                    outputs=[sim_results_html],
+                )
+
+                sim_select_all_btn.click(
+                    fn=select_high_critical_findings,
+                    inputs=[raw_json],
+                    outputs=[sim_checkboxes],
+                )
+
+                sim_reset_btn.click(
+                    fn=lambda: gr.update(value=[]),
+                    inputs=[],
+                    outputs=[sim_checkboxes],
+                )
+
+                download_md_btn.click(
+                    fn=export_md_file,
+                    inputs=[raw_json],
+                    outputs=[file_download],
+                )
+
+                download_json_btn.click(
+                    fn=export_json_file,
+                    inputs=[raw_json],
+                    outputs=[file_download],
+                )
+
+            # ===============================================================
+            # TAB 2: Competitor Benchmark (Round 4 Prototype)
+            # ===============================================================
+            with gr.TabItem("⚔️ Competitor Benchmark", id="tab_competitor"):
+                gr.HTML("""
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
+                    <div style="font-size: 1.25rem; font-weight: 800; color: #ffffff;">Live Competitor Head-to-Head AI Readiness Benchmark</div>
+                    <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">
+                        Round 4 Prototype Showcase: Benchmark your domain against any competitor across AI Discoverability (ACPI) and On-Site Retention (CRS).
+                    </div>
+                </div>
+                """)
+
+                with gr.Row():
+                    with gr.Column(scale=2):
+                        comp_url_a = gr.Textbox(
+                            label="Your Website URL",
+                            value="https://adobe.com",
+                            placeholder="https://yourbrand.com",
+                        )
+                    with gr.Column(scale=2):
+                        comp_url_b = gr.Textbox(
+                            label="Competitor Website URL",
+                            value="https://canva.com",
+                            placeholder="https://competitor.com",
+                        )
+                    with gr.Column(scale=1, min_width=180):
+                        comp_btn = gr.Button("⚔️ Compare Head-to-Head", variant="primary", scale=1)
+
+                gr.Examples(
+                    examples=[
+                        ["https://adobe.com", "https://canva.com"],
+                        ["https://openai.com", "https://anthropic.com"],
+                        ["https://github.com", "https://gitlab.com"],
+                    ],
+                    inputs=[comp_url_a, comp_url_b],
+                    label="Comparison Matchup Presets",
+                )
+
+                comp_winner_output = gr.HTML(value="")
+
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        comp_card_a = gr.HTML(
+                            value="<div style='color:#94a3b8; text-align:center; padding:20px;'>Brand A scorecard will appear here.</div>"
+                        )
+                    with gr.Column(scale=1):
+                        comp_card_b = gr.HTML(
+                            value="<div style='color:#94a3b8; text-align:center; padding:20px;'>Brand B scorecard will appear here.</div>"
+                        )
+
+                comp_matrix_output = gr.HTML(value="")
+                comp_insights_output = gr.Markdown(value="")
+
+                comp_btn.click(
+                    fn=run_competitor_comparison,
+                    inputs=[comp_url_a, comp_url_b],
+                    outputs=[comp_winner_output, comp_card_a, comp_card_b, comp_matrix_output, comp_insights_output],
                 )
 
             # ===============================================================

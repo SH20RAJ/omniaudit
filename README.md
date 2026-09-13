@@ -25,7 +25,7 @@
 > **Team:** Shaswat Raj ([@sh20raj](https://github.com/sh20raj)) & Prithvi ([@chikolavosaki-sys](https://github.com/chikolavosaki-sys))<br>
 > **Challenge:** [Unstop - Adobe University Hackathon 2026](https://unstop.com/hackathons/crp-adobe-university-hackathon-2026-adobe-1715333)<br>
 > **Interactive Documentation Portal:** [https://omniaudit-geo.onrender.com/docs](https://omniaudit-geo.onrender.com/docs)<br>
-> **New to GEO & AEO? Start here:** [📘 Beginner's Guide (ELI5)](./beginners.md) | [🏆 Jury Pitch & Defense Guide](./pitch.md)
+> **Essential Guides:** [📘 Beginner's Guide (ELI5)](./beginners.md) | [🏆 Round 4 Showcase & Defense](./ROUND4_SHOWCASE.md) | [🎤 Executive Pitch & Q&A](./pitch.md)
 
 ---
 
@@ -38,10 +38,12 @@
 
 ### 2. Why Does it Win?
 * **Zero External API Dependencies:** The core AST and heuristic engine runs on **100% Python standard library** (`urllib`, `html.parser`, `re`, `json`, `math`). No API keys, no external credits, and completely offline-executable.
-* **Streamlined Performance:** In-memory AST parsing executes in **~0.7–1.0 ms** per site on standard hardware, with strict network bounds (10s socket timeout, 5 MB payload limit, 5-hop redirect cap).
+* **Streamlined Performance:** In-memory AST parsing executes in **~0.4–0.7 ms** per site on standard hardware, with strict network bounds (10s socket timeout, 5 MB payload limit, 5-hop redirect cap).
+* **Interactive "What-If" Fix Simulator:** Check off detected defects to dynamically project ACPI and CRS score lifts before writing code.
+* **Head-to-Head Competitor Benchmark:** Live side-by-side comparison across AI discoverability, crawler rules, and retention metrics with automated winner breakdown.
+* **1-Click AI Remediation & MCP Protocol:** Generates copy-paste prompts for Claude/Cursor and exposes 7 Anthropic MCP tools via standard JSON-RPC 2.0.
 * **Adversarial Security Hardening:** Comprehensive anti-SSRF defense blocking private RFC 1918 subnets, loopback, and cloud instance metadata (`169.254.169.254`).
-* **Multi-Surface Architecture:** A single shared Python AST engine powers the CLI (`omni`), Anthropic MCP server (stdio & remote HTTP), FastAPI REST endpoints, and reactive Gradio 6 UI.
-* **100% Verified Quality:** **167 automated unit/integration tests** passing across 6 gates, with 100% precision and recall on the 16 Golden Benchmarks fixture matrix.
+* **100% Verified Quality:** **193 automated unit/integration tests** passing across 6 gates, with 100% precision and recall on the 16 Golden Benchmarks fixture matrix.
 
 ---
 

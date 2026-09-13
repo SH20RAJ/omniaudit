@@ -245,3 +245,14 @@
 * ✅ All 6 skills contain valid `SKILL.md` with YAML frontmatter
 * ✅ Unpacked in isolated temporary sandbox and verified with `cli.py verify --ci`
 * ✅ 100% compliant with the Unstop submission prompt.
+
+---
+
+## 🚀 Part 6: Round 4 Prototype Showcase & Live Defense Roadmap
+
+For the live presentation stage (21–27 September 2026), see the comprehensive [**`ROUND4_SHOWCASE.md`**](./ROUND4_SHOWCASE.md) guide, featuring:
+* **The 3-Minute Live Demo Pitch Script:** Second-by-second presentation actions and speaking notes.
+* **5 Live Interactive Demonstration Scenarios:** Master audit, What-If Fix Simulator, Competitor Benchmark matchup, MCP Agent invocation, and offline sandboxed CI verification.
+* **Adobe Product Ecosystem Integration Blueprint:** Pre-publish cloud manager gate for AEM, catalog entity enrichment for Adobe Commerce, and retention personalization for Adobe Target.
+* **Emergency Live Demo Fallback Runbook:** Operational procedures ensuring 100% presentation uptime under all network conditions.
+

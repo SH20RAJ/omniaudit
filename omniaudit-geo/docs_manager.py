@@ -127,6 +127,22 @@ DOCS_REGISTRY: list[dict[str, Any]] = [
         "description": "Production Dockerfile, GHCR registry, Render webhook auto-deploy, and DigitalOcean config.",
     },
     {
+        "id": "round4-showcase",
+        "title": "Round 4 Prototype Showcase & Defense",
+        "icon": "🏆",
+        "category": "Canonical Guides",
+        "rel_path": "ROUND4_SHOWCASE.md",
+        "description": "Round 4 Prototype Showcase guide: 3-minute live pitch script, 5 live demonstration scenarios, What-If simulator, competitor benchmarking, and Adobe ecosystem roadmap.",
+    },
+    {
+        "id": "pitch",
+        "title": "Executive Pitch & Hackathon Q&A Strategy",
+        "icon": "🎤",
+        "category": "Canonical Guides",
+        "rel_path": "pitch.md",
+        "description": "90-second word-for-word jury pitch, Adobe Hackathon trend analysis, and comprehensive top-20 technical defenses.",
+    },
+    {
         "id": "judging",
         "title": "Judge & Jury Defense",
         "icon": "⚖️",
