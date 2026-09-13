@@ -252,7 +252,7 @@ class _HydrationHTMLParser:
                 self.stack = []
 
             def handle_starttag(self, tag, attrs):
-                attrs = dict(attrs)
+                attrs = {k: (v if v is not None else "") for k, v in attrs}
                 root_name = owner_root_name(tag, attrs)
                 self.stack.append((tag.lower(), root_name))
                 if root_name:

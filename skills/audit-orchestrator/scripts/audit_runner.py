@@ -89,7 +89,7 @@ class HTMLContentExtractor(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         self.current_tag = tag
-        attr_dict = dict(attrs)
+        attr_dict = {k: (v if v is not None else "") for k, v in attrs}
         style = attr_dict.get("style", "").replace(" ", "").lower()
         aria_hidden = attr_dict.get("aria-hidden", "").lower() == "true" and tag not in {"i", "svg"}
         is_hidden = "hidden" in attr_dict or aria_hidden or "display:none" in style or "visibility:hidden" in style
