@@ -50,42 +50,101 @@ from mcp_server import MCP_TOOLS
 # ---------------------------------------------------------------------------
 
 
-def render_score_badge(score: float, label: str) -> str:
-    """Renders a color-coded circular score badge with qualitative rating."""
+# ---------------------------------------------------------------------------
+# UI Visual Helper Components (Glassmorphism & SVG Radial Gauges)
+# ---------------------------------------------------------------------------
+
+
+def render_score_badge(score: float, label: str, components: dict[str, float] | None = None) -> str:
+    """Renders an enterprise SVG circular radial score meter with qualitative rating and sub-breakdown."""
+    radius = 38
+    circ = 2 * 3.14159265 * radius
+    pct = max(0.0, min(100.0, score))
+    offset = circ * (1.0 - pct / 100.0)
+
     if score >= 90:
         color = "#10b981"
-        bg = "rgba(16, 185, 129, 0.12)"
-        rating = "EXCELLENT"
+        bg = "rgba(16, 185, 129, 0.1)"
+        grade = "A+" if score >= 95 else "A"
+        rating = "EXCELLENT · OPTIMIZED"
     elif score >= 75:
-        color = "#3b82f6"
-        bg = "rgba(59, 130, 246, 0.12)"
-        rating = "GOOD"
+        color = "#38bdf8"
+        bg = "rgba(56, 189, 248, 0.1)"
+        grade = "B"
+        rating = "GOOD · SOLID"
     elif score >= 60:
         color = "#f59e0b"
-        bg = "rgba(245, 158, 11, 0.12)"
-        rating = "NEEDS WORK"
+        bg = "rgba(245, 158, 11, 0.1)"
+        grade = "C"
+        rating = "NEEDS ATTENTION"
     else:
         color = "#ef4444"
-        bg = "rgba(239, 68, 68, 0.12)"
-        rating = "CRITICAL"
+        bg = "rgba(239, 68, 68, 0.1)"
+        grade = "F"
+        rating = "CRITICAL RISKS"
+
+    comp_html = ""
+    if components:
+        bars = []
+        for name, val in components.items():
+            val_pct = max(0.0, min(100.0, float(val)))
+            bar_color = (
+                "#10b981"
+                if val_pct >= 90
+                else ("#38bdf8" if val_pct >= 75 else ("#f59e0b" if val_pct >= 60 else "#ef4444"))
+            )
+            bars.append(f"""
+            <div style="margin-bottom: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8; margin-bottom: 2px;">
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">{name}</span>
+                    <span style="color: {bar_color}; font-weight: 700; font-family: monospace;">{val_pct:.0f}%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.06); height: 4px; border-radius: 2px; overflow: hidden;">
+                    <div style="background: {bar_color}; width: {val_pct}%; height: 100%; border-radius: 2px;"></div>
+                </div>
+            </div>
+            """)
+        comp_html = f"""
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); text-align: left;">
+            {"".join(bars)}
+        </div>
+        """
 
     return f"""
-    <div style="background: {bg}; border: 1px solid {color}40; border-radius: 12px; padding: 18px 14px; text-align: center; position: relative; overflow: hidden;">
-        <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">{label}</div>
-        <div style="font-size: 2.6rem; font-weight: 800; color: {color}; line-height: 1.1; margin: 4px 0;">{score:.1f}<span style="font-size: 1.1rem; color: #64748b; font-weight: 500;">/100</span></div>
-        <div style="display: inline-block; margin-top: 4px; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; background: {color}25; color: {color};">{rating}</div>
+    <div class="glass-card" style="border-top: 3px solid {color} !important; padding: 20px 16px; text-align: center; position: relative;">
+        <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">{label}</div>
+        <div style="display: flex; justify-content: center; align-items: center; margin: 4px 0 10px 0; position: relative;">
+            <svg width="106" height="106" viewBox="0 0 106 106" style="transform: rotate(-90deg);">
+                <circle cx="53" cy="53" r="{radius}" stroke="rgba(255,255,255,0.08)" stroke-width="7" fill="transparent" />
+                <circle cx="53" cy="53" r="{radius}" stroke="{color}" stroke-width="7" fill="transparent"
+                        stroke-dasharray="{circ:.1f}" stroke-dashoffset="{offset:.1f}" stroke-linecap="round"
+                        style="transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);" />
+            </svg>
+            <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span style="font-size: 1.95rem; font-weight: 800; color: #ffffff; line-height: 1; font-family: Outfit, sans-serif;">{score:.1f}</span>
+                <span style="font-size: 0.66rem; color: {color}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px;">GRADE {grade}</span>
+            </div>
+        </div>
+        <div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; background: {bg}; color: {color}; border: 1px solid {color}40;">
+                <span class="pulse-dot" style="background: {color}; box-shadow: 0 0 8px {color};"></span> {rating}
+            </span>
+        </div>
+        {comp_html}
     </div>
     """
 
 
 def render_findings_html(findings: list[dict[str, Any]]) -> str:
-    """Renders audit findings as clean, responsive, high-contrast cards."""
+    """Renders audit findings as clean, responsive, high-contrast cards with filter counters."""
     if not findings:
         return """
-        <div style="text-align: center; padding: 32px 20px; background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 10px; color: #10b981; margin: 10px 0;">
-            <div style="font-size: 2rem; margin-bottom: 6px;">✓</div>
-            <div style="font-size: 1.05rem; font-weight: 700;">No Issues Detected</div>
-            <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">The audited target satisfies all heuristic gates for this diagnostic layer.</div>
+        <div style="text-align: center; padding: 40px 20px; background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 12px; color: #10b981; margin: 12px 0;">
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">✓</div>
+            <div style="font-size: 1.15rem; font-weight: 800; font-family: Outfit, sans-serif;">Flawless Diagnostics — Zero Issues Detected</div>
+            <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 6px; max-width: 480px; margin-left: auto; margin-right: auto;">
+                The target satisfies all deterministic heuristic gates across crawler permissions, Schema.org entities, quotation clarity, and visitor retention.
+            </div>
         </div>
         """
 
@@ -96,6 +155,26 @@ def render_findings_html(findings: list[dict[str, Any]]) -> str:
         "low": {"bg": "rgba(59, 130, 246, 0.15)", "border": "#3b82f6", "text": "#3b82f6", "icon": "ℹ️"},
         "info": {"bg": "rgba(100, 116, 139, 0.15)", "border": "#94a3b8", "text": "#94a3b8", "icon": "📝"},
     }
+
+    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+    for f in findings:
+        s = str(f.get("severity", "medium")).lower()
+        if s in counts:
+            counts[s] += 1
+
+    filter_bar_html = f"""
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 14px 0; flex-wrap: wrap; gap: 8px;">
+        <div style="font-size: 0.88rem; color: #94a3b8; font-weight: 600;">
+            Showing <strong style="color: #f8fafc;">{len(findings)}</strong> diagnostic findings (sorted by priority):
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <span class="sev-chip crit">🚨 {counts["critical"]} Critical</span>
+            <span class="sev-chip high">⚠️ {counts["high"]} High</span>
+            <span class="sev-chip med">⚡ {counts["medium"]} Medium</span>
+            <span class="sev-chip low">ℹ️ {counts["low"]} Low</span>
+        </div>
+    </div>
+    """
 
     cards = []
     for f in findings:
@@ -116,19 +195,17 @@ def render_findings_html(findings: list[dict[str, Any]]) -> str:
                 ev_str = str(evidence).strip()
             if ev_str and ev_str != "{}":
                 evidence_html = f"""
-                <details style="margin-top: 10px; background: rgba(0,0,0,0.35); border-radius: 6px; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.06);">
-                    <summary style="cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #94a3b8; font-family: monospace;">🔍 View Diagnostic Evidence & AST Context</summary>
-                    <pre style="margin: 8px 0 4px 0; font-size: 0.74rem; color: #cbd5e1; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: 'SFMono-Regular', Consolas, Monaco, monospace; max-height: 220px;">{ev_str}</pre>
+                <details style="margin-top: 10px; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 8px 14px; border: 1px solid rgba(255,255,255,0.06);">
+                    <summary style="cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #94a3b8; font-family: monospace; user-select: none;">🔍 View Diagnostic Evidence & AST Context</summary>
+                    <pre style="margin: 8px 0 4px 0; font-size: 0.75rem; color: #cbd5e1; overflow-x: auto; white-space: pre-wrap; word-break: break-all; font-family: 'JetBrains Mono', Consolas, monospace; max-height: 220px;">{ev_str}</pre>
                 </details>
                 """
 
         card_html = f"""
-        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 4px solid {
-            st["border"]
-        }; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; transition: all 0.2s ease;">
+        <div class="finding-card" style="border-left: 4px solid {st["border"]} !important;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span style="background: rgba(255,255,255,0.08); color: #f1f5f9; font-family: monospace; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">{
+                    <span style="background: rgba(255,255,255,0.08); color: #f1f5f9; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">{
             fid
         }</span>
                     <span style="background: {st["bg"]}; color: {st["text"]}; border: 1px solid {
@@ -136,17 +213,17 @@ def render_findings_html(findings: list[dict[str, Any]]) -> str:
         }50; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.04em;">
                         {st["icon"]} {sev.upper()}
                     </span>
-                    <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em;">{
+                    <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">{
             cat
         }</span>
                 </div>
             </div>
-            <div style="font-size: 1rem; font-weight: 600; color: #f8fafc; margin-bottom: 8px; line-height: 1.4;">
+            <div style="font-size: 1.02rem; font-weight: 600; color: #f8fafc; margin-bottom: 8px; line-height: 1.45;">
                 {title}
             </div>
             {
-            f'''<div style="background: rgba(235, 16, 0, 0.06); border-left: 3px solid #eb1000; border-radius: 4px; padding: 8px 12px; font-size: 0.85rem; color: #e2e8f0; line-height: 1.5; margin-bottom: 6px;">
-                <strong style="color: #fca5a5;">💡 Action:</strong> {remediation}
+            f'''<div class="action-callout">
+                <strong style="color: #fca5a5;">💡 Remediation Plan:</strong> {remediation}
             </div>'''
             if remediation
             else ""
@@ -158,9 +235,7 @@ def render_findings_html(findings: list[dict[str, Any]]) -> str:
 
     return f"""
     <div style="margin-top: 8px;">
-        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 500;">
-            Showing <strong>{len(findings)}</strong> diagnostic findings (sorted by priority):
-        </div>
+        {filter_bar_html}
         {"".join(cards)}
     </div>
     """
@@ -171,30 +246,32 @@ def render_proactive_recs(recommendations: list[dict[str, Any]]) -> str:
     if not recommendations:
         return "<div style='color:#94a3b8; font-size:0.9rem; padding: 12px 0;'>No critical proactive recommendations generated. Target website satisfies core optimization heuristics.</div>"
 
+    prio_colors = {
+        "CRITICAL": "#ef4444",
+        "HIGH": "#f97316",
+        "MEDIUM": "#f59e0b",
+        "LOW": "#38bdf8",
+    }
+
     cards = []
     for r in recommendations:
         prio = str(r.get("priority", "medium")).upper()
         title = r.get("title", "")
         rec = r.get("recommendation", "")
         impact = r.get("impact", "")
-
-        prio_colors = {
-            "CRITICAL": "#ef4444",
-            "HIGH": "#f97316",
-            "MEDIUM": "#f59e0b",
-            "LOW": "#3b82f6",
-        }
         color = prio_colors.get(prio, "#f59e0b")
 
         cards.append(f"""
-        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-top: 3px solid {color}; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">{title}</span>
-                <span style="background: {color}20; color: {color}; border: 1px solid {color}50; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px;">{prio} PRIORITY</span>
+        <div class="glass-card" style="border-top: 3px solid {color} !important; padding: 16px 18px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 1rem; font-weight: 700; color: #f8fafc; font-family: Outfit, sans-serif;">{title}</span>
+                <span style="background: {color}20; color: {color}; border: 1px solid {color}50; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                    {prio} PRIORITY
+                </span>
             </div>
-            <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 8px;">{rec}</div>
-            <div style="font-size: 0.78rem; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.08); padding: 4px 10px; border-radius: 4px; display: inline-block;">
-                📈 Expected Impact: {impact}
+            <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.55; margin-bottom: 10px;">{rec}</div>
+            <div style="font-size: 0.78rem; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16,185,129,0.25); padding: 4px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                📈 Expected Strategic Impact: {impact}
             </div>
         </div>
         """)
@@ -431,6 +508,47 @@ def select_high_critical_findings(report: dict[str, Any]) -> Any:
     return gr.update(value=selected)
 
 
+def select_critical_findings(report: dict[str, Any]) -> Any:
+    """Selects only critical findings in the What-If simulation CheckboxGroup."""
+    if not report or not report.get("findings"):
+        return gr.update(value=[])
+    selected = []
+    for f in report.get("findings", []):
+        sev = str(f.get("severity", "medium")).lower()
+        if sev == "critical":
+            label = f"[{sev.upper()}] {f.get('id', 'F-???')}: {f.get('title', '')}"
+            selected.append(label)
+    return gr.update(value=selected)
+
+
+def select_crawl_findings(report: dict[str, Any]) -> Any:
+    """Selects crawlability, robots, and hydration findings."""
+    if not report or not report.get("findings"):
+        return gr.update(value=[])
+    selected = []
+    for f in report.get("findings", []):
+        cat = str(f.get("category", "")).lower()
+        if any(k in cat for k in ("crawl", "render", "robot", "network", "hydration")):
+            sev = str(f.get("severity", "medium")).upper()
+            label = f"[{sev}] {f.get('id', 'F-???')}: {f.get('title', '')}"
+            selected.append(label)
+    return gr.update(value=selected)
+
+
+def select_schema_findings(report: dict[str, Any]) -> Any:
+    """Selects structured data and Schema.org entity findings."""
+    if not report or not report.get("findings"):
+        return gr.update(value=[])
+    selected = []
+    for f in report.get("findings", []):
+        cat = str(f.get("category", "")).lower()
+        if any(k in cat for k in ("schema", "entity", "structured", "data", "sameas")):
+            sev = str(f.get("severity", "medium")).upper()
+            label = f"[{sev}] {f.get('id', 'F-???')}: {f.get('title', '')}"
+            selected.append(label)
+    return gr.update(value=selected)
+
+
 def run_what_if_simulation(report: dict[str, Any], selected_labels: list[str]) -> str:
     """Re-calculates projected ACPI & CRS scores excluding user-selected resolved findings."""
     if not report or "metrics" not in report:
@@ -588,21 +706,52 @@ def run_competitor_comparison(
     def _render_comp_card(
         site: str, acpi: float, crs: float, tot: int, crit: int, lat: float, border_color: str
     ) -> str:
+        r = 26
+        circ = 2 * 3.14159265 * r
+        pct_acpi = max(0.0, min(100.0, acpi))
+        off_acpi = circ * (1.0 - pct_acpi / 100.0)
+        c_acpi = "#10b981" if acpi >= 80 else ("#38bdf8" if acpi >= 70 else ("#f59e0b" if acpi >= 50 else "#ef4444"))
+
+        pct_crs = max(0.0, min(100.0, crs))
+        off_crs = circ * (1.0 - pct_crs / 100.0)
+        c_crs = "#38bdf8" if crs >= 80 else ("#818cf8" if crs >= 70 else ("#f59e0b" if crs >= 50 else "#ef4444"))
+
         return f"""
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-top: 4px solid {border_color}; border-radius: 12px; padding: 18px 16px; text-align: center;">
-            <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 10px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{site}</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0;">
-                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">ACPI · Discoverability</div>
-                    <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 2px;">{acpi:.1f}</div>
+        <div class="glass-card" style="border-top: 4px solid {border_color} !important; padding: 20px 16px; text-align: center;">
+            <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 12px; font-family: Outfit, sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{site}</div>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 12px 0 16px 0; flex-wrap: wrap;">
+                <!-- Mini ACPI Gauge -->
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="72" height="72" viewBox="0 0 72 72" style="transform: rotate(-90deg);">
+                            <circle cx="36" cy="36" r="{r}" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="transparent" />
+                            <circle cx="36" cy="36" r="{r}" stroke="{c_acpi}" stroke-width="5" fill="transparent"
+                                    stroke-dasharray="{circ:.1f}" stroke-dashoffset="{off_acpi:.1f}" stroke-linecap="round" />
+                        </svg>
+                        <div style="position: absolute; font-size: 1.15rem; font-weight: 800; color: #ffffff; font-family: Outfit, sans-serif;">
+                            {acpi:.1f}
+                        </div>
+                    </div>
+                    <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-top: 5px;">ACPI (GEO)</span>
                 </div>
-                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-                    <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">CRS · Retention</div>
-                    <div style="font-size: 1.8rem; font-weight: 800; color: #3b82f6; margin-top: 2px;">{crs:.1f}</div>
+                <!-- Mini CRS Gauge -->
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="position: relative; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="72" height="72" viewBox="0 0 72 72" style="transform: rotate(-90deg);">
+                            <circle cx="36" cy="36" r="{r}" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="transparent" />
+                            <circle cx="36" cy="36" r="{r}" stroke="{c_crs}" stroke-width="5" fill="transparent"
+                                    stroke-dasharray="{circ:.1f}" stroke-dashoffset="{off_crs:.1f}" stroke-linecap="round" />
+                        </svg>
+                        <div style="position: absolute; font-size: 1.15rem; font-weight: 800; color: #ffffff; font-family: Outfit, sans-serif;">
+                            {crs:.1f}
+                        </div>
+                    </div>
+                    <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-top: 5px;">CRS (Retention)</span>
                 </div>
             </div>
-            <div style="font-size: 0.82rem; color: #94a3b8;">
-                Defects: <strong style="color:#f59e0b;">{tot}</strong> (Critical: <strong style="color:#ef4444;">{crit}</strong>) · Latency: <strong>{lat:.2f}s</strong>
+            <div style="font-size: 0.8rem; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; justify-content: space-around;">
+                <span>Defects: <strong style="color:#f59e0b;">{tot}</strong> (<span style="color:#ef4444; font-weight: 700;">{crit} crit</span>)</span>
+                <span>Latency: <strong>{lat:.2f}s</strong></span>
             </div>
         </div>
         """
@@ -735,25 +884,55 @@ def perform_full_audit(
     low = summary.get("low", 0)
     clean_url = report.get("site", url)
 
+    findings = report.get("findings", [])
+    scores_info = compute_scores(findings)
+    comp_scores = scores_info.get("component_scores", {})
+    acpi_comps = {
+        "Crawlability (30%)": comp_scores.get("crawlability", 100.0),
+        "Renderability (15%)": comp_scores.get("renderability", 100.0),
+        "Entity Clarity (20%)": comp_scores.get("entity_clarity", 100.0),
+        "Quotability (20%)": comp_scores.get("quotability", 100.0),
+        "Freshness/Trust (15%)": comp_scores.get("trust_freshness", 100.0),
+    }
+    crs_comps = {
+        "Orientation (35%)": comp_scores.get("orientation", 100.0),
+        "Intent (25%)": comp_scores.get("intent_continuity", 100.0),
+        "Readability (20%)": comp_scores.get("readability", 100.0),
+        "Actionability (20%)": comp_scores.get("actionability", 100.0),
+    }
+
+    badge_acpi = render_score_badge(acpi, "ACPI · AI Discoverability", acpi_comps)
+    badge_crs = render_score_badge(crs, "CRS · Visitor Retention", crs_comps)
+
     # Status Cards HTML
     metrics_html = f"""
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 20px;">
-        {render_score_badge(acpi, "ACPI · AI Discoverability")}
-        {render_score_badge(crs, "CRS · Visitor Retention")}
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px 14px; text-align: center;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Total Findings</div>
-            <div style="font-size: 2.6rem; font-weight: 800; color: #f59e0b; line-height: 1.1; margin: 4px 0;">{total}</div>
-            <div style="display: flex; justify-content: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                <span style="font-size: 0.7rem; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.15); padding: 1px 6px; border-radius: 4px;">Crit: {crit}</span>
-                <span style="font-size: 0.7rem; font-weight: 700; color: #f97316; background: rgba(249,115,22,0.15); padding: 1px 6px; border-radius: 4px;">High: {high}</span>
-                <span style="font-size: 0.7rem; font-weight: 700; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 6px; border-radius: 4px;">Med: {med}</span>
-                <span style="font-size: 0.7rem; font-weight: 700; color: #3b82f6; background: rgba(59,130,246,0.15); padding: 1px 6px; border-radius: 4px;">Low: {low}</span>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        {badge_acpi}
+        {badge_crs}
+        <div class="glass-card" style="border-top: 3px solid #f59e0b !important; padding: 20px 16px; text-align: center;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">Diagnostic Defects</div>
+            <div style="font-size: 2.8rem; font-weight: 800; color: #f59e0b; line-height: 1.1; margin: 4px 0; font-family: Outfit, sans-serif;">{total}</div>
+            <div style="margin: 8px 0 12px 0;">
+                <span style="font-size: 0.74rem; font-weight: 700; color: #f59e0b; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); padding: 2px 10px; border-radius: 12px;">
+                    {crit + high} ACTIONABLE PRIORITY
+                </span>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 6px; margin-top: 10px; flex-wrap: wrap;">
+                <span class="sev-chip crit">🚨 {crit}</span>
+                <span class="sev-chip high">⚠️ {high}</span>
+                <span class="sev-chip med">⚡ {med}</span>
+                <span class="sev-chip low">ℹ️ {low}</span>
             </div>
         </div>
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 18px 14px; text-align: center;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Engine Latency</div>
-            <div style="font-size: 2.6rem; font-weight: 800; color: #8b5cf6; line-height: 1.1; margin: 4px 0;">{elapsed:.2f}s</div>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 6px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+        <div class="glass-card" style="border-top: 3px solid #8b5cf6 !important; padding: 20px 16px; text-align: center;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px;">Engine Latency</div>
+            <div style="font-size: 2.8rem; font-weight: 800; color: #a78bfa; line-height: 1.1; margin: 4px 0; font-family: Outfit, sans-serif;">{elapsed:.2f}s</div>
+            <div style="margin: 8px 0 12px 0;">
+                <span style="font-size: 0.74rem; font-weight: 700; color: #a78bfa; background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25); padding: 2px 10px; border-radius: 12px;">
+                    100% AIR-GAPPED AST
+                </span>
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 10px; font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 {report.get("site", clean_url)}
             </div>
         </div>
@@ -977,18 +1156,97 @@ def on_doc_change(choice: str):
 # ---------------------------------------------------------------------------
 
 CUSTOM_CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 body, .gradio-container {
-    max-width: 1280px !important;
+    max-width: 1320px !important;
     margin: 0 auto !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    background-color: #090d16 !important;
+    background: radial-gradient(ellipse at 50% -10%, #1e1b4b 0%, #080c16 55%, #04060a 100%) !important;
     color: #f1f5f9 !important;
+    min-height: 100vh !important;
 }
 
 h1, h2, h3, .brand-title {
     font-family: 'Outfit', 'Inter', sans-serif !important;
+    letter-spacing: -0.02em !important;
+}
+
+pre, code, .code-font {
+    font-family: 'JetBrains Mono', Consolas, monospace !important;
+}
+
+.glass-card {
+    background: rgba(15, 23, 42, 0.72) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+
+.glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 14px 36px -8px rgba(0, 0, 0, 0.75), 0 0 20px rgba(56, 189, 248, 0.08) !important;
+}
+
+.finding-card {
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 12px !important;
+    padding: 16px 18px !important;
+    margin-bottom: 12px !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.finding-card:hover {
+    background: rgba(22, 34, 60, 0.8) !important;
+    transform: translateX(4px) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.action-callout {
+    background: rgba(239, 68, 68, 0.07) !important;
+    border-left: 3px solid #ef4444 !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    margin: 10px 0 !important;
+    font-size: 0.88rem !important;
+    color: #cbd5e1 !important;
+    line-height: 1.5 !important;
+}
+
+.sev-chip {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.sev-chip.crit { background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; border: 1px solid rgba(239, 68, 68, 0.35) !important; }
+.sev-chip.high { background: rgba(249, 115, 22, 0.15) !important; color: #f97316 !important; border: 1px solid rgba(249, 115, 22, 0.35) !important; }
+.sev-chip.med { background: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.35) !important; }
+.sev-chip.low { background: rgba(59, 130, 246, 0.15) !important; color: #38bdf8 !important; border: 1px solid rgba(59, 130, 246, 0.35) !important; }
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 1; }
+    50% { transform: scale(1.18); opacity: 0.75; }
+    100% { transform: scale(0.95); opacity: 1; }
+}
+
+.pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite ease-in-out;
 }
 
 .header-badge {
@@ -1001,7 +1259,7 @@ h1, h2, h3, .brand-title {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     background: rgba(235, 16, 0, 0.12);
-    color: #ff3b30;
+    color: #ff4d4f;
     border: 1px solid rgba(235, 16, 0, 0.3);
     border-radius: 20px;
 }
@@ -1009,19 +1267,65 @@ h1, h2, h3, .brand-title {
 .stat-chip {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
+    gap: 6px;
+    padding: 4px 11px;
     font-size: 12px;
+    font-weight: 600;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
     color: #94a3b8;
+    transition: all 0.2s ease;
+}
+.stat-chip:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.16);
 }
 
-/* Tab Active Styles */
-button.tab-nav {
+button.primary, .gr-button-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #0284c7 50%, #06b6d4 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+    transition: all 0.2s ease !important;
+}
+button.primary:hover, .gr-button-primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5) !important;
+}
+
+button.secondary, .gr-button-secondary {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
     font-weight: 600 !important;
-    font-size: 0.92rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+button.secondary:hover, .gr-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.09) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #080c14;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
 }
 """
 
@@ -1030,49 +1334,45 @@ def create_gradio_app() -> gr.Blocks:
     """Creates the full, pure Gradio frontend for OmniAudit-GEO."""
     with gr.Blocks(title="OmniAudit-GEO — Brand AI-Readiness Platform") as demo:
         gr.HTML(f"<style>{CUSTOM_CSS}</style>")
-        # Top Header
+        # Top Minimalist Navigation & Brand Header
         with gr.Row():
             with gr.Column():
                 gr.HTML("""
-                <div style="padding: 14px 0 18px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                        <div class="header-badge">
-                            <span style="display: inline-block; width: 6px; height: 6px; background: #38bdf8; border-radius: 50%;"></span>
-                            Adobe University Hackathon 2026 · Round 3 CRP
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <a href="/docs" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #38bdf8; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); padding: 4px 10px; border-radius: 4px;">
-                                📖 Docs Portal
-                            </a>
-                            <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit" target="_blank" style="text-decoration: none;">
-                                <img src="https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit&countColor=%23263759&style=flat" alt="Visitors" style="vertical-align: middle; border-radius: 4px;" />
-                            </a>
-                            <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #cbd5e1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 4px;">
-                                ★ GitHub
-                            </a>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                        <img src="/brand/logo.png" alt="OmniAudit-GEO Logo" style="height: 54px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(56,189,248,0.2));" />
-                        <div>
-                            <div style="display: flex; align-items: baseline; gap: 10px;">
-                                <h1 class="brand-title" style="font-size: 2.1rem; font-weight: 800; margin: 0; letter-spacing: -0.03em; color: #ffffff;">
-                                    OmniAudit<span style="color:#38bdf8;">.GEO</span>
-                                </h1>
-                                <span style="font-size: 0.82rem; font-weight: 600; color: #38bdf8; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); padding: 2px 8px; border-radius: 4px;">
-                                    agentskills.io Standard
-                                </span>
+                <div style="padding: 18px 0 16px 0; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="/brand/logo.png" alt="Logo" style="height: 40px; width: auto; object-fit: contain;" />
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">
+                                        OmniAudit<span style="color: #38bdf8;">.GEO</span>
+                                    </span>
+                                    <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px; letter-spacing: 0.03em;">
+                                        Round 3 CRP · agentskills.io
+                                    </span>
+                                </div>
                             </div>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                <span class="pulse-dot" style="background: #10b981;"></span>
+                                AIR-GAPPED AST · 0.4ms
+                            </span>
+                            <a href="/docs" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 600; color: #38bdf8; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); padding: 4px 10px; border-radius: 6px;">
+                                📖 Docs ↗
+                            </a>
+                            <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 600; color: #cbd5e1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">
+                                ★ GitHub ↗
+                            </a>
+                        </div>
                     </div>
-                    <p style="font-size: 0.95rem; color: #94a3b8; margin: 10px 0 12px 0; line-height: 1.5;">
-                        Enterprise Agent Skill Marketplace auditing website <strong>Off-Site AI Discoverability (ACPI)</strong> and <strong>On-Site Visitor Retention (CRS)</strong> using pure Python AST heuristics.
-                    </p>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <span class="stat-chip">🛡️ Anti-SSRF Enforced</span>
-                        <span class="stat-chip">⚡ Sub-Millisecond AST Parsers</span>
-                        <span class="stat-chip">🎯 16 Golden Benchmarks Matrix</span>
-                        <span class="stat-chip">🔌 Model Context Protocol (MCP) JSON-RPC 2.0</span>
+                    <div style="margin-top: 14px;">
+                        <h2 style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0 0 4px 0; font-family: Outfit, sans-serif;">
+                            Brand AI-Readiness &amp; Visitor Retention Audit
+                        </h2>
+                        <p style="font-size: 0.88rem; color: #94a3b8; margin: 0; line-height: 1.5;">
+                            Deterministic Python AST engine measuring <strong>AI Citation Probability (ACPI: 0–100)</strong> and <strong>Visitor Retention (CRS: 0–100)</strong> with zero cloud LLM dependencies.
+                        </p>
                     </div>
                 </div>
                 """)
@@ -1083,95 +1383,96 @@ def create_gradio_app() -> gr.Blocks:
             # ===============================================================
             with gr.TabItem("⚡ Master Brand Audit", id="tab_audit"):
                 with gr.Row():
-                    with gr.Column(scale=4):
+                    with gr.Column(scale=5):
                         url_input = gr.Textbox(
-                            label="Target Website URL to Audit",
-                            placeholder="Enter any public website URL (e.g. https://adobe.com, https://example.com)...",
+                            label="",
+                            placeholder="Enter any domain or URL (e.g. https://adobe.com, https://example.com)...",
                             value="https://example.com",
                             lines=1,
+                            show_label=False,
+                            container=False,
                         )
-                    with gr.Column(scale=1, min_width=160):
-                        audit_btn = gr.Button("🚀 Run Master Audit", variant="primary", scale=1)
+                    with gr.Column(scale=1, min_width=140):
+                        audit_btn = gr.Button("🚀 Run Audit", variant="primary", scale=1)
 
-                gr.Examples(
-                    examples=[
-                        ["https://example.com"],
-                        ["https://adobe.com"],
-                        ["https://openai.com"],
-                    ],
-                    inputs=[url_input],
-                    label="Quick Target Presets",
-                )
+                with gr.Row():
+                    gr.Markdown(
+                        "<span style='font-size: 0.78rem; color: #94a3b8; font-weight: 600; line-height: 2;'>Quick Presets:</span>"
+                    )
+                    btn_p_adobe = gr.Button("Adobe", size="sm", variant="secondary")
+                    btn_p_openai = gr.Button("OpenAI", size="sm", variant="secondary")
+                    btn_p_github = gr.Button("GitHub", size="sm", variant="secondary")
+                    btn_p_stripe = gr.Button("Stripe", size="sm", variant="secondary")
+                    btn_p_campus = gr.Button("CampusLoop", size="sm", variant="secondary")
+                    btn_p_example = gr.Button("Example.com", size="sm", variant="secondary")
 
                 audit_status = gr.HTML(value="")
                 summary_meta = gr.Markdown(value="")
 
-                with gr.Row():
-                    with gr.Column():
-                        gr.HTML(
-                            "<h3 style='font-size: 1.15rem; font-weight: 700; margin: 15px 0 8px 0; color:#f8fafc;'>📋 Proactive Recommendations (Beyond-Defect Strategic Advisory)</h3>"
-                        )
-                        recs_output = gr.HTML(
-                            value="<div style='color:#94a3b8; font-size:0.9rem;'>Run an audit to view strategic recommendations.</div>"
-                        )
-
-                with gr.Row():
-                    with gr.Column():
-                        gr.HTML(
-                            "<h3 style='font-size: 1.15rem; font-weight: 700; margin: 20px 0 8px 0; color:#f8fafc;'>🔍 Detailed Diagnostic Findings & AST Evidence</h3>"
-                        )
+                with gr.Tabs():
+                    with gr.TabItem("📋 Diagnostic Findings", id="subtab_findings"):
                         findings_output = gr.HTML(
-                            value="<div style='color:#94a3b8; font-size:0.9rem;'>Detailed findings will render here after running an audit.</div>"
+                            value="<div style='color:#94a3b8; font-size:0.9rem; padding: 30px; text-align: center;'>Run an audit above to inspect diagnostic findings and AST evidence.</div>"
                         )
 
-                # -----------------------------------------------------------
-                # Interactive "What-If" Fix Simulator
-                # -----------------------------------------------------------
-                with gr.Accordion("🔧 Interactive 'What-If' Fix Simulator (Impact Predictor)", open=True):
-                    gr.Markdown(
-                        "Check off detected defects below to simulate: *'If I resolve these issues, what will my projected ACPI and CRS scores be?'*"
-                    )
-                    sim_checkboxes = gr.CheckboxGroup(
-                        choices=[],
-                        value=[],
-                        label="Detected Defects (Select items to simulate resolving)",
-                    )
-                    with gr.Row():
-                        sim_btn = gr.Button("⚡ Re-calculate Projected Scores", variant="primary", scale=2)
-                        sim_select_all_btn = gr.Button("Select All High & Critical", variant="secondary", scale=1)
-                        sim_reset_btn = gr.Button("Reset Selection", variant="secondary", scale=1)
-                    sim_results_html = gr.HTML(
-                        value="<div style='color:#94a3b8; font-size:0.9rem; padding:8px 0;'>Select defects and click 'Re-calculate' to project your improved scores.</div>"
-                    )
+                    with gr.TabItem("💡 Proactive Strategy", id="subtab_recs"):
+                        recs_output = gr.HTML(
+                            value="<div style='color:#94a3b8; font-size:0.9rem; padding: 30px; text-align: center;'>Run an audit to view strategic recommendations beyond defects.</div>"
+                        )
 
-                # -----------------------------------------------------------
-                # AI Remediation Prompt & Export Center
-                # -----------------------------------------------------------
-                with gr.Accordion("🚀 AI Action Prompt & Export Center", open=True):
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            gr.Markdown("#### 🤖 Instant AI Fix Prompt (Copy & Paste into Claude, Cursor, ChatGPT)")
-                            ai_prompt_box = gr.Code(
-                                label="AI Remediation Prompt (Click Copy Icon in Top-Right)",
-                                language="markdown",
-                                lines=14,
-                                interactive=False,
-                            )
-                        with gr.Column(scale=1):
-                            gr.Markdown("#### 📄 Export Full Markdown Report")
-                            md_report_box = gr.Code(
-                                label="Markdown Report (Click Copy Icon in Top-Right)",
-                                language="markdown",
-                                lines=14,
-                                interactive=False,
-                            )
-                    with gr.Row():
-                        download_md_btn = gr.Button("📥 Download Markdown Report (.md)", variant="secondary", scale=1)
-                        download_json_btn = gr.Button("📥 Download JSON Report (.json)", variant="secondary", scale=1)
-                    file_download = gr.File(label="Exported Report Download", interactive=False)
+                    with gr.TabItem("⚡ 'What-If' Fix Simulator", id="subtab_sim"):
+                        gr.Markdown(
+                            "Select detected issues to simulate: *'If I resolve these issues, what will my new ACPI and CRS scores be?'*"
+                        )
+                        sim_checkboxes = gr.CheckboxGroup(
+                            choices=[],
+                            value=[],
+                            label="Detected Defects (Select to resolve)",
+                        )
+                        with gr.Row():
+                            sim_btn = gr.Button("⚡ Re-calculate Projected Scores", variant="primary", scale=2)
+                            sim_select_crit_btn = gr.Button("Critical Only", variant="secondary", scale=1)
+                            sim_select_all_btn = gr.Button("High & Critical", variant="secondary", scale=1)
+                            sim_select_crawl_btn = gr.Button("Crawl & Robots", variant="secondary", scale=1)
+                            sim_select_schema_btn = gr.Button("Schema & Entities", variant="secondary", scale=1)
+                            sim_reset_btn = gr.Button("Reset", variant="secondary", scale=1)
+                        sim_results_html = gr.HTML(
+                            value="<div style='color:#94a3b8; font-size:0.9rem; padding:10px 0;'>Select defects and click 'Re-calculate' to project your score gain.</div>"
+                        )
 
-                with gr.Accordion("📦 Raw Standard JSON Report (Conforms to references/audit_schema.json)", open=False):
-                    raw_json = gr.JSON(value={}, label="Verified Audit Schema Output")
+                    with gr.TabItem("🤖 AI Fix Prompt & Export", id="subtab_export"):
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                gr.Markdown("#### 🤖 Instant AI Fix Prompt (Copy & paste into Claude / Cursor)")
+                                ai_prompt_box = gr.Code(
+                                    label="AI Remediation Prompt (Click Copy in Top-Right)",
+                                    language="markdown",
+                                    lines=14,
+                                    interactive=False,
+                                )
+                            with gr.Column(scale=1):
+                                gr.Markdown("#### 📄 Full Markdown Audit Report")
+                                md_report_box = gr.Code(
+                                    label="Markdown Report (Click Copy in Top-Right)",
+                                    language="markdown",
+                                    lines=14,
+                                    interactive=False,
+                                )
+                        with gr.Row():
+                            download_md_btn = gr.Button("📥 Download Markdown (.md)", variant="secondary", scale=1)
+                            download_json_btn = gr.Button("📥 Download JSON (.json)", variant="secondary", scale=1)
+                        file_download = gr.File(label="Exported Report File", interactive=False)
+
+                    with gr.TabItem("📦 Raw JSON Schema", id="subtab_json"):
+                        raw_json = gr.JSON(value={}, label="Verified Audit Schema Output")
+
+                # Wiring preset buttons
+                btn_p_adobe.click(fn=lambda: "https://adobe.com", outputs=[url_input])
+                btn_p_openai.click(fn=lambda: "https://openai.com", outputs=[url_input])
+                btn_p_github.click(fn=lambda: "https://github.com", outputs=[url_input])
+                btn_p_stripe.click(fn=lambda: "https://stripe.com", outputs=[url_input])
+                btn_p_campus.click(fn=lambda: "https://campusloop.space", outputs=[url_input])
+                btn_p_example.click(fn=lambda: "https://example.com", outputs=[url_input])
 
                 audit_btn.click(
                     fn=perform_full_audit,
@@ -1195,8 +1496,26 @@ def create_gradio_app() -> gr.Blocks:
                     outputs=[sim_results_html],
                 )
 
+                sim_select_crit_btn.click(
+                    fn=select_critical_findings,
+                    inputs=[raw_json],
+                    outputs=[sim_checkboxes],
+                )
+
                 sim_select_all_btn.click(
                     fn=select_high_critical_findings,
+                    inputs=[raw_json],
+                    outputs=[sim_checkboxes],
+                )
+
+                sim_select_crawl_btn.click(
+                    fn=select_crawl_findings,
+                    inputs=[raw_json],
+                    outputs=[sim_checkboxes],
+                )
+
+                sim_select_schema_btn.click(
+                    fn=select_schema_findings,
                     inputs=[raw_json],
                     outputs=[sim_checkboxes],
                 )
@@ -1248,14 +1567,26 @@ def create_gradio_app() -> gr.Blocks:
                     with gr.Column(scale=1, min_width=180):
                         comp_btn = gr.Button("⚔️ Compare Head-to-Head", variant="primary", scale=1)
 
-                gr.Examples(
-                    examples=[
-                        ["https://adobe.com", "https://canva.com"],
-                        ["https://openai.com", "https://anthropic.com"],
-                        ["https://github.com", "https://gitlab.com"],
-                    ],
-                    inputs=[comp_url_a, comp_url_b],
-                    label="Comparison Matchup Presets",
+                with gr.Row():
+                    gr.Markdown(
+                        "<span style='font-size: 0.8rem; color: #94a3b8; font-weight: 600;'>⚔️ Quick Matchups:</span>"
+                    )
+                    btn_m_adobe = gr.Button("Adobe vs Canva", size="sm", variant="secondary")
+                    btn_m_openai = gr.Button("OpenAI vs Anthropic", size="sm", variant="secondary")
+                    btn_m_github = gr.Button("GitHub vs GitLab", size="sm", variant="secondary")
+                    btn_m_vercel = gr.Button("Vercel vs Netlify", size="sm", variant="secondary")
+
+                btn_m_adobe.click(
+                    fn=lambda: ("https://adobe.com", "https://canva.com"), outputs=[comp_url_a, comp_url_b]
+                )
+                btn_m_openai.click(
+                    fn=lambda: ("https://openai.com", "https://anthropic.com"), outputs=[comp_url_a, comp_url_b]
+                )
+                btn_m_github.click(
+                    fn=lambda: ("https://github.com", "https://gitlab.com"), outputs=[comp_url_a, comp_url_b]
+                )
+                btn_m_vercel.click(
+                    fn=lambda: ("https://vercel.com", "https://netlify.com"), outputs=[comp_url_a, comp_url_b]
                 )
 
                 comp_winner_output = gr.HTML(value="")
