@@ -104,6 +104,11 @@ curl -fsSL https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/install.sh |
   </video>
 </p>
 
+
+https://github.com/user-attachments/assets/24977476-78bc-4478-a78d-5088e13b6c26
+
+
+
 <p align="center">
   <em>▶️ <b>Direct Video Link:</b> <a href="omniaudit_terminal_demo.mp4"><code>omniaudit_terminal_demo.mp4</code></a> (32s · High Definition H.264 · Demonstrates interactive <code>omni</code> launcher, live brand audit scorecard, head-to-head competitor benchmark, AI remediation prompt clipboard copy, and 16 golden fixtures).</em>
 </p>
