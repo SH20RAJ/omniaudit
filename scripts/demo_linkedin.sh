@@ -19,14 +19,14 @@ NC='\033[0m' # No Color
 # Typing simulation function
 type_command() {
     local cmd="$1"
-    local delay=0.035
-    printf "${BOLD}${GREEN}shaswatraj@macOS${NC}:${BOLD}${BLUE}~${NC}$ "
+    local delay=0.04
+    printf "${BOLD}${GREEN}[shaswatraj@Sh ~ %% ${NC}"
     for ((i=0; i<${#cmd}; i++)); do
         printf "%s" "${cmd:$i:1}"
         sleep $delay
     done
     printf "\n"
-    sleep 0.5
+    sleep 0.6
 }
 
 # Ensure omni is available
@@ -38,19 +38,21 @@ clear
 sleep 1.0
 
 # ------------------------------------------------------------------------------
-# Scene 1: Welcome & Help / Capabilities Overview
+# Scene 1: Starting with 'omni' interactive mode (matching screenshot)
 # ------------------------------------------------------------------------------
-type_command "omni --help"
-python3 cli.py --help | head -n 28
-printf "\n${CYAN}... [6 specialist skills · 16 golden benchmarks · MCP server] ...${NC}\n"
-sleep 3.0
-
-clear
+type_command "omni"
+python3 -c "from cli import print_banner, _c, BOLD, CYAN, GREEN; print_banner(); print(_c(BOLD, 'Welcome to OmniAudit-GEO! Choose an action or paste any URL directly:\n')); print(f'  {_c(CYAN, \"[1]\")} 🚀 Run Master Website Audit\n  {_c(CYAN, \"[2]\")} ⚔️  Competitor Head-to-Head Benchmark (Compare 2 sites)\n  {_c(CYAN, \"[3]\")} 📊 Run 16 Golden Benchmarks (Accuracy Suite)\n  {_c(CYAN, \"[4]\")} 🤖 Generate AI Remediation Fix Prompt (Claude / Cursor)\n  {_c(CYAN, \"[5]\")} 🔬 Run Specialist Skill Audit\n  {_c(CYAN, \"[6]\")} 🌐 Launch Web Dashboard & REST API (http://localhost:8000)\n  {_c(CYAN, \"[7]\")} 📖 Browse Documentation Catalog\n  {_c(CYAN, \"[8]\")} 🚪 Exit\n')"
+sleep 2.0
+printf "${BOLD}${GREEN}Select an option [1-8] or enter URL [default: 1]: ${NC}"
+target="https://adobe.com"
+for ((i=0; i<${#target}; i++)); do
+    printf "%s" "${target:$i:1}"
+    sleep 0.04
+done
+printf "\n"
 sleep 0.8
 
-# ------------------------------------------------------------------------------
-# Scene 2: Live Instant Audit (Adobe.com)
-# ------------------------------------------------------------------------------
+clear
 type_command "omni https://adobe.com"
 python3 cli.py https://adobe.com
 sleep 4.0

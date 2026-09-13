@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -97,6 +98,29 @@ def color_severity(sev: str) -> str:
         return _c(YELLOW, f"⚡ [{s}]")
     else:
         return _c(BLUE, f"ℹ️  [{s}]")
+
+
+def strip_ansi(text: str) -> str:
+    """Strips ANSI escape codes to measure true visible length."""
+    return re.sub(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])", "", text)
+
+
+def _vis_len(text: str) -> int:
+    return len(strip_ansi(text))
+
+
+def _pad(text: str, width: int, align: str = "left") -> str:
+    """Pads text containing ANSI codes so that visible width equals width."""
+    v = _vis_len(text)
+    pad = max(0, width - v)
+    if align == "right":
+        return " " * pad + text
+    elif align == "center":
+        left = pad // 2
+        right = pad - left
+        return " " * left + text + " " * right
+    else:
+        return text + " " * pad
 
 
 def make_progress_bar(pct: float, width: int = 16) -> str:
@@ -275,23 +299,26 @@ def cmd_compare(args: argparse.Namespace) -> int:
     lead_crs = site_a if crs_a >= crs_b else site_b
 
     print(_c(CYAN, _c(BOLD, "╭" + "─" * 74 + "╮")))
-    print(_c(CYAN, _c(BOLD, f"│ ⚔️  COMPETITIVE BENCHMARK: {site_a[:28]:<28} vs {site_b[:28]:<28} │")))
-    print(_c(CYAN, _c(BOLD, "├" + "─" * 30 + "┬" + "─" * 15 + "┬" + "─" * 15 + "┬" + "─" * 11 + "┤")))
-    print(f"│ {'Evaluation Dimension':<28} │ {site_a[:13]:^13} │ {site_b[:13]:^13} │ {'Leader':^9} │")
-    print(_c(CYAN, _c(BOLD, "├" + "─" * 30 + "┼" + "─" * 15 + "┼" + "─" * 15 + "┼" + "─" * 11 + "┤")))
+    title_comp = f" ⚔  BENCHMARK: {site_a[:25]} vs {site_b[:25]}"
+    print(_c(CYAN, _c(BOLD, f"│{_pad(title_comp, 74)}│")))
+    print(_c(CYAN, _c(BOLD, "├" + "─" * 28 + "┬" + "─" * 15 + "┬" + "─" * 15 + "┬" + "─" * 13 + "┤")))
+    print(
+        f"│{_pad(' Evaluation Dimension', 28)}│{_pad(site_a[:13], 15, 'center')}│{_pad(site_b[:13], 15, 'center')}│{_pad('Leader', 13, 'center')}│"
+    )
+    print(_c(CYAN, _c(BOLD, "├" + "─" * 28 + "┼" + "─" * 15 + "┼" + "─" * 15 + "┼" + "─" * 13 + "┤")))
 
     def _row(dim: str, va: str, vb: str, leader: str) -> str:
-        return f"│ {dim:<28} │ {va:^13} │ {vb:^13} │ {leader:^9} │"
+        return f"│{_pad(' ' + dim, 28)}│{_pad(va, 15, 'center')}│{_pad(vb, 15, 'center')}│{_pad(leader, 13, 'center')}│"
 
-    print(_row("ACPI (AI Discoverability)", f"{acpi_a:.1f}/100", f"{acpi_b:.1f}/100", lead_acpi[:9]))
-    print(_row("CRS (Visitor Retention)", f"{crs_a:.1f}/100", f"{crs_b:.1f}/100", lead_crs[:9]))
+    print(_row("ACPI (AI Discoverability)", f"{acpi_a:.1f}/100", f"{acpi_b:.1f}/100", lead_acpi[:12]))
+    print(_row("CRS (Visitor Retention)", f"{crs_a:.1f}/100", f"{crs_b:.1f}/100", lead_crs[:12]))
     lead_crit = site_a if crit_a <= crit_b else site_b
-    print(_row("Critical Defects", str(crit_a), str(crit_b), lead_crit[:9]))
+    print(_row("Critical Defects", str(crit_a), str(crit_b), lead_crit[:12]))
     lead_tot = site_a if tot_a <= tot_b else site_b
-    print(_row("Total Diagnostic Issues", str(tot_a), str(tot_b), lead_tot[:9]))
+    print(_row("Total Diagnostic Issues", str(tot_a), str(tot_b), lead_tot[:12]))
     lead_lat = site_a if lat_a <= lat_b else site_b
-    print(_row("Diagnostic Latency", f"{lat_a:.2f}s", f"{lat_b:.2f}s", lead_lat[:9]))
-    print(_c(CYAN, _c(BOLD, "╰" + "─" * 30 + "┴" + "─" * 15 + "┴" + "─" * 15 + "┴" + "─" * 11 + "╯")))
+    print(_row("Diagnostic Latency", f"{lat_a:.2f}s", f"{lat_b:.2f}s", lead_lat[:12]))
+    print(_c(CYAN, _c(BOLD, "╰" + "─" * 28 + "┴" + "─" * 15 + "┴" + "─" * 15 + "┴" + "─" * 13 + "╯")))
 
     if diff > 0.5:
         print(_c(GREEN, _c(BOLD, f"\n🏆 {site_a} LEADS COMPETITIVE READINESS (+{diff:.1f} composite pts)")))
@@ -696,46 +723,50 @@ def format_text_report(report: dict[str, Any], elapsed: float = 0.0) -> str:
     # Top Executive Scoreboard Box
     lat_str = f"{elapsed:.2f}s" if elapsed > 0 else "0.28s"
     lines.append(_c(CYAN, _c(BOLD, "╭" + "─" * 74 + "╮")))
-    lines.append(f"│ {_c(BOLD, 'TARGET:')} {site[:36]:<36} {_c(DIM, 'AST LATENCY:')} {lat_str:>16} │")
+    row_top_left = f" {_c(BOLD, 'TARGET:')} {site[:36]}"
+    row_top_right = f"{_c(DIM, 'AST LATENCY:')} {lat_str} "
+    lines.append(f"│{_pad(row_top_left, 46)}{_pad(row_top_right, 28, 'right')}│")
     lines.append(_c(CYAN, _c(BOLD, "├" + "─" * 36 + "┬" + "─" * 37 + "┤")))
     lines.append(
-        f"│ {_c(BOLD, 'ACPI · AI DISCOVERABILITY (GEO)'):<34} │ {_c(BOLD, 'CRS · VISITOR RETENTION (UX)'):<35} │"
+        f"│{_pad(' ' + _c(BOLD, 'ACPI · AI DISCOVERABILITY (GEO)'), 36)}│{_pad(' ' + _c(BOLD, 'CRS · VISITOR RETENTION (UX)'), 37)}│"
     )
-    lines.append(
-        f"│   Score: {_c(col_acpi, _c(BOLD, f'{acpi:.1f} / 100'))} [Grade {grade_acpi}]"
-        f"  │   Score: {_c(col_crs, _c(BOLD, f'{crs:.1f} / 100'))} [Grade {grade_crs}]  │"
-    )
-    lines.append(f"│   {bar_acpi:<40} │   {bar_crs:<41} │")
+    score_acpi_str = f"   Score: {_c(col_acpi, _c(BOLD, f'{acpi:.1f} / 100'))} [Grade {grade_acpi}]"
+    score_crs_str = f"   Score: {_c(col_crs, _c(BOLD, f'{crs:.1f} / 100'))} [Grade {grade_crs}]"
+    lines.append(f"│{_pad(score_acpi_str, 36)}│{_pad(score_crs_str, 37)}│")
+    lines.append(f"│{_pad('   ' + bar_acpi, 36)}│{_pad('   ' + bar_crs, 37)}│")
     lines.append(_c(CYAN, _c(BOLD, "├" + "─" * 36 + "┼" + "─" * 37 + "┤")))
+    c_crawl = comps.get("crawlability", 100.0)
+    c_orient = comps.get("orientation", 100.0)
+    c_render = comps.get("renderability", 100.0)
+    c_intent = comps.get("intent_continuity", 100.0)
+    c_entity = comps.get("entity_clarity", 100.0)
+    c_read = comps.get("readability", 100.0)
+    c_quota = comps.get("quotability", 100.0)
+    c_action = comps.get("actionability", 100.0)
+    c_trust = comps.get("trust_freshness", 100.0)
+
     lines.append(
-        f"│  • Crawlability   : {comps.get('crawlability', 100.0):>5.1f}%"
-        f"      │  • Orientation   : {comps.get('orientation', 100.0):>5.1f}%      │"
+        f"│{_pad(f'  • Crawlability   : {c_crawl:>5.1f}%', 36)}│{_pad(f'  • Orientation   : {c_orient:>5.1f}%', 37)}│"
     )
     lines.append(
-        f"│  • Renderability  : {comps.get('renderability', 100.0):>5.1f}%"
-        f"      │  • Intent Match  : {comps.get('intent_continuity', 100.0):>5.1f}%      │"
+        f"│{_pad(f'  • Renderability  : {c_render:>5.1f}%', 36)}│{_pad(f'  • Intent Match  : {c_intent:>5.1f}%', 37)}│"
     )
     lines.append(
-        f"│  • Entity Clarity : {comps.get('entity_clarity', 100.0):>5.1f}%"
-        f"      │  • Readability   : {comps.get('readability', 100.0):>5.1f}%      │"
+        f"│{_pad(f'  • Entity Clarity : {c_entity:>5.1f}%', 36)}│{_pad(f'  • Readability   : {c_read:>5.1f}%', 37)}│"
     )
     lines.append(
-        f"│  • Quotability    : {comps.get('quotability', 100.0):>5.1f}%"
-        f"      │  • Actionability : {comps.get('actionability', 100.0):>5.1f}%      │"
+        f"│{_pad(f'  • Quotability    : {c_quota:>5.1f}%', 36)}│{_pad(f'  • Actionability : {c_action:>5.1f}%', 37)}│"
     )
-    lines.append(
-        f"│  • Freshness/Trust: {comps.get('trust_freshness', 100.0):>5.1f}%"
-        f"      │                                     │"
-    )
+    lines.append(f"│{_pad(f'  • Freshness/Trust: {c_trust:>5.1f}%', 36)}│{_pad('', 37)}│")
     lines.append(_c(CYAN, _c(BOLD, "├" + "─" * 74 + "┤")))
     defects_line = (
         f"  DIAGNOSTIC ISSUES: {_c(BOLD, str(total))} Total "
-        f"({_c(RED, f'🚨 {crit} Critical')} · "
-        f"{_c(RED, f'⚠️  {high} High')} · "
+        f"({_c(RED, f'▲ {crit} Crit')} · "
+        f"{_c(RED, f'▲ {high} High')} · "
         f"{_c(YELLOW, f'⚡ {med} Med')} · "
-        f"{_c(BLUE, f'ℹ️  {low} Low')})"
+        f"{_c(BLUE, f'ℹ {low} Low')})"
     )
-    lines.append(f"│{defects_line:<86}│")
+    lines.append(f"│{_pad(defects_line, 74)}│")
     lines.append(_c(CYAN, _c(BOLD, "╰" + "─" * 74 + "╯")))
 
     # Findings section
