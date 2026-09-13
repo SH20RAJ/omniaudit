@@ -90,6 +90,10 @@ Organized as an `agentskills.io` compliant Agent Skill Marketplace defined by [`
 curl -fsSL https://raw.githubusercontent.com/SH20RAJ/omniaudit/main/install.sh | bash
 ```
 
+<p align="center">
+  <img src="omniaudit-geo/public/brand/terminal-demo.png" alt="Instant CLI Installation & Autonomous Audit in Terminal" width="100%" />
+</p>
+
 ### Method 2: Cloned Repository (Editable Python Package)
 ```bash
 git clone https://github.com/SH20RAJ/omniaudit.git

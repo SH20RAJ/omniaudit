@@ -236,6 +236,14 @@ DOCS_REGISTRY: list[dict[str, Any]] = [
         "rel_path": "marketplace.json",
         "description": "Official agentskills.io marketplace manifest defining skills and entrypoint.",
     },
+    {
+        "id": "pitch",
+        "title": "Jury Pitch & Defense Guide",
+        "icon": "🏆",
+        "category": "Root Protocols",
+        "rel_path": "pitch.md",
+        "description": "Executive 90-second speech, Adobe past hackathons criteria analysis, and 20+ technical jury defenses.",
+    },
     # -------------------------------------------------------------
     # 4. Historical Archive
     # -------------------------------------------------------------
