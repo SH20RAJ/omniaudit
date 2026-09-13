@@ -196,7 +196,7 @@ def safe_fetch(
         except FetchValidationError as exc:
             return _failure("fetch_blocked", str(exc))
 
-        status = response.getcode()
+        status = response.getcode() or 0
         if status in _REDIRECT_STATUSES:
             if redirect_count >= max_redirects:
                 return _failure("redirect_limit", "redirect limit exceeded")

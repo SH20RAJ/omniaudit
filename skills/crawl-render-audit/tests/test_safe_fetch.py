@@ -156,7 +156,7 @@ class SafeFetchTests(unittest.TestCase):
                     "https://example.com/robots.txt",
                     404,
                     "Not Found",
-                    {"Content-Type": "text/plain"},
+                    {"Content-Type": "text/plain"},  # type: ignore[arg-type]
                     None,
                 )
             ]

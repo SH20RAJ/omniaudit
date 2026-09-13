@@ -539,6 +539,7 @@ def audit_structured_data(base_url, parsed_content):
         "@id_references": sorted(set(id_references)),
     }
 
+    implementation_code = ""
     if not organization_identity_present or not website_present:
         if not parsed_schemas:
             missing_core_types = ["Organization", "WebSite"]
@@ -917,7 +918,7 @@ def audit_freshness_trust(parsed_content, full_html, base_url=""):
     latest = max(meaningful_dates, key=lambda item: item["date"]) if meaningful_dates else None
     age_days = (today - datetime.fromisoformat(latest["date"]).date()).days if latest else None
     freshness_status = "UNKNOWN"
-    if latest:
+    if latest and age_days is not None:
         freshness_status = "CURRENT_SIGNAL" if age_days <= 365 else "AGED_SIGNAL"
         if age_days > 1095:
             freshness_status = "STALE_SIGNAL"

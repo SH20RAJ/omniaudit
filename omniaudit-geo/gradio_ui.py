@@ -319,8 +319,8 @@ def perform_live_mcp_call(tool_name: str, target_url: str, request: gr.Request |
 
 
 def load_benchmarks_data() -> tuple[str, list[list[str]]]:
-    """Runs the 16 Golden Fixtures evaluation harness and formats results."""
-    eval_res = run_evals(return_dict=True)
+    eval_raw = run_evals(return_dict=True)
+    eval_res: dict[str, Any] = eval_raw if isinstance(eval_raw, dict) else {}
     total = eval_res.get("total", 16)
     passed = eval_res.get("passed", 16)
     precision = eval_res.get("precision_pct", 100.0)
@@ -408,6 +408,7 @@ def get_mcp_tools_data() -> list[list[str]]:
                 req or "none",
             ]
         )
+    return rows
 
 
 def get_doc_choices(category: str = "All Categories") -> list[str]:

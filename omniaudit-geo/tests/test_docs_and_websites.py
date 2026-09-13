@@ -57,6 +57,7 @@ class TestDocumentationSystem(unittest.TestCase):
             doc_id = item["id"]
             doc = get_doc_by_id(doc_id)
             self.assertIsNotNone(doc, f"Doc {doc_id} returned None")
+            assert doc is not None
             self.assertTrue(doc["exists"], f"Doc {doc_id} marked as not existing at {doc['rel_path']}")
             self.assertGreater(len(doc["content"]), 50, f"Doc {doc_id} content too short")
             self.assertNotIn("Document Not Found", doc["content"], f"Doc {doc_id} returned Document Not Found error")

@@ -306,4 +306,5 @@ def run_evals(return_dict: bool = False):
 
 
 if __name__ == "__main__":
-    sys.exit(run_evals())
+    code = run_evals(return_dict=False)
+    sys.exit(int(code) if isinstance(code, int) else 0)

@@ -187,8 +187,9 @@ def compute_scores(
         words_count = max(1, measurements.get("words_count", 1))
         fact_density = facts_count / (words_count / 100.0)
         base_quotability = 70.0 + min(20.0, fact_density * 4.0)
-        if measurements.get("faq_pairs", 0) > 0:
-            base_quotability += min(10.0, measurements.get("faq_pairs") * 5.0)
+        faq_pairs = measurements.get("faq_pairs", 0) or 0
+        if faq_pairs > 0:
+            base_quotability += min(10.0, faq_pairs * 5.0)
         base_scores["quotability"] = min(100.0, base_quotability)
 
         # Orientation: clear H1 structure, meta description presence

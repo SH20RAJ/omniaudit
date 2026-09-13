@@ -128,6 +128,7 @@ def verify_fastapi_engine():
         print(f"\n{RED}--- GATE 5 FASTAPI ENGINE IMPORT FAILURE ---{RESET}")
         traceback.print_exc()
         print(f"{RED}--------------------------------------------{RESET}\n")
+        return {"status": "failed", "routes_count": 0}
 
 
 def verify_documentation_and_contracts():
@@ -291,7 +292,8 @@ def main():
     # GATE 3: Golden Benchmark Evaluation Matrix
     # -------------------------------------------------------------
     print_gate_header(3, "Golden Benchmark Evaluation Matrix")
-    bench_data = run_evals(return_dict=True)
+    bench_raw = run_evals(return_dict=True)
+    bench_data: dict = bench_raw if isinstance(bench_raw, dict) else {}
     gate_results["gate3_benchmarks"] = bench_data
     if bench_data["status"] != "passed":
         overall_passed = False

@@ -295,7 +295,8 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     """Run the 16 Golden Benchmarks evaluation harness."""
     from eval_benchmarks import run_evals
 
-    return int(run_evals(return_dict=False))
+    res = run_evals(return_dict=False)
+    return int(res) if isinstance(res, int) else 0
 
 
 def cmd_package(args: argparse.Namespace) -> int:

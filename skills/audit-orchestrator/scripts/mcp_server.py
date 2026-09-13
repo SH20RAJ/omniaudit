@@ -238,6 +238,12 @@ def handle_json_rpc(request_input) -> dict:
                 }
 
             name = params.get("name")
+            if not isinstance(name, str):
+                return {
+                    "jsonrpc": "2.0",
+                    "id": req_id,
+                    "error": {"code": -32602, "message": "Invalid params: 'name' must be a string"},
+                }
             matched_tool = next((t for t in MCP_TOOLS if t["name"] == name), None)
             if not matched_tool:
                 return {
