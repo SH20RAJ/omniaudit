@@ -15,7 +15,7 @@
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="License" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
   <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" /></a>
-  <a href="https://gradio.app/"><img src="https://img.shields.io/badge/Frontend-Gradio%206-FF7C00?style=flat-square&logo=gradio&logoColor=white" alt="Gradio" /></a>
+  <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/Frontend-Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" alt="Streamlit" /></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Spec-agentskills.io-8B5CF6?style=flat-square" alt="agentskills.io" /></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/Protocol-Anthropic%20MCP-D97706?style=flat-square" alt="MCP" /></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" /></a>
@@ -154,7 +154,8 @@ omni specialist freshness --url https://adobe.com
 omni specialist engagement --url https://adobe.com
 
 # 8. Local web dashboard, verification & packaging
-omni serve --port 8000   # Launch FastAPI + Gradio Web UI
+omni serve --port 8000           # Launch FastAPI Web Control Plane
+streamlit run streamlit_app.py   # Launch Streamlit Enterprise UI (or: omni serve --streamlit)
 omni mcp --test          # Run internal MCP protocol self-test
 omni verify --ci         # Run the unified 6-gate verification loop
 omni package             # Rebuild and sandbox-verify omniaudit-geo-marketplace.zip

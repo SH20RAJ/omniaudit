@@ -495,20 +495,25 @@ def cmd_serve(args: argparse.Namespace) -> int:
     port = getattr(args, "port", 8000)
     host = getattr(args, "host", "0.0.0.0")
 
-    if getattr(args, "gradio_only", False):
-        from gradio_ui import create_gradio_app
+    if getattr(args, "streamlit", False) or getattr(args, "gradio_only", False):
+        import subprocess
 
-        from seo_config import SEO_HEAD_HTML
-
-        demo = create_gradio_app()
-        print(_c(GREEN, f"🚀 Launching standalone Gradio UI on http://{host}:{port}"))
-        demo.launch(
-            server_name=host,
-            server_port=port,
-            head=SEO_HEAD_HTML,
-            favicon_path=str(REPO_ROOT / "omniaudit-geo" / "public" / "favicon.ico"),
-        )
-        return 0
+        st_port = 8501 if port == 8000 else port
+        print(_c(GREEN, f"🚀 Launching OmniAudit-GEO Streamlit UI on http://{host}:{st_port}"))
+        cmd = [
+            sys.executable,
+            "-m",
+            "streamlit",
+            "run",
+            str(REPO_ROOT / "streamlit_app.py"),
+            "--server.port",
+            str(st_port),
+            "--server.address",
+            str(host),
+            "--server.headless",
+            "true",
+        ]
+        return subprocess.call(cmd)
 
     try:
         import uvicorn
@@ -889,7 +894,10 @@ Examples:
     serve_parser.add_argument("--port", "-p", type=int, default=8000, help="Port to bind (default: 8000)")
     serve_parser.add_argument("--host", default="0.0.0.0", help="Host interface to bind (default: 0.0.0.0)")
     serve_parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
-    serve_parser.add_argument("--gradio-only", action="store_true", help="Run standalone Gradio UI without FastAPI")
+    serve_parser.add_argument("--streamlit", action="store_true", help="Launch Streamlit UI")
+    serve_parser.add_argument(
+        "--gradio-only", action="store_true", help="Run standalone UI without FastAPI (Streamlit)"
+    )
 
     # 8. verify subcommand
     verify_parser = subparsers.add_parser("verify", help="Run official 6-Gate verification loop")

@@ -515,19 +515,144 @@ async def serve_icon_512():
 
 
 # -------------------------------------------------------------
-# Pure Gradio Frontend Mounting (Root / and Standalone)
+# Root Landing Portal & Unified Streamlit Bridge (Pure Python)
 # -------------------------------------------------------------
-import gradio as gr
-from gradio_ui import create_gradio_app
+ROOT_LANDING_HTML = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniAudit-GEO — Dual-Engine Brand AI Discoverability &amp; Visitor Retention</title>
+  {SEO_HEAD_HTML}
+  <style>
+    :root {{
+      --bg: #090d16;
+      --card: #0f172a;
+      --border: #1e293b;
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }}
+    body {{
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }}
+    .portal-card {{
+      max-width: 680px;
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+      text-align: center;
+    }}
+    .badge {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }}
+    h1 {{
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 12px 0;
+      letter-spacing: -0.02em;
+    }}
+    p.lead {{
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 32px 0;
+    }}
+    .actions {{
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }}
+    .btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }}
+    .btn-primary {{
+      background: var(--accent);
+      color: #090d16;
+    }}
+    .btn-primary:hover {{
+      background: #7dd3fc;
+      transform: translateY(-1px);
+    }}
+    .btn-secondary {{
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #334155;
+    }}
+    .btn-secondary:hover {{
+      background: #334155;
+      transform: translateY(-1px);
+    }}
+    .footer-meta {{
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }}
+  </style>
+</head>
+<body>
+  <div class="portal-card">
+    <div class="badge">⚡ Streamlit UI &amp; FastAPI Control Plane</div>
+    <h1>OmniAudit<span style="color: var(--accent);">.GEO</span></h1>
+    <p class="lead">Dual-Engine Brand AI Discoverability (ACPI) &amp; Visitor Retention (CRS) Audit Platform. Auditing machine crawlers and human readability with zero cloud dependencies.</p>
+    <div class="actions">
+      <a href="http://localhost:8501" class="btn btn-primary">⚡ Launch Streamlit App</a>
+      <a href="/docs" class="btn btn-secondary">📖 Documentation Portal</a>
+      <a href="/api/docs" class="btn btn-secondary">🔌 OpenAPI REST Docs</a>
+    </div>
+    <div class="footer-meta">
+      <span>Standard: <code>agentskills.io v1.0.0</code></span>
+      <span>Engine: Pure Local Python AST</span>
+      <span>Status: All 6 Gates Active</span>
+    </div>
+  </div>
+  {NOSCRIPT_SEMANTIC_BODY}
+</body>
+</html>"""
 
-gradio_blocks = create_gradio_app()
-app = gr.mount_gradio_app(
-    app,
-    gradio_blocks,
-    path="/",
-    head=SEO_HEAD_HTML,
-    favicon_path=str(PUBLIC_DIR / "favicon.ico"),
-)
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_root_portal():
+    return HTMLResponse(content=ROOT_LANDING_HTML, status_code=200)
+
 
 if __name__ == "__main__":
     import uvicorn

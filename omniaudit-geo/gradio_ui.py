@@ -13,7 +13,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-import gradio as gr
+try:
+    import gradio as gr
+except ImportError:
+    gr = None
 
 # Ensure core scripts are importable
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -1330,8 +1333,13 @@ button.secondary:hover, .gr-button-secondary:hover {
 """
 
 
-def create_gradio_app() -> gr.Blocks:
+def create_gradio_app() -> Any:
     """Creates the full, pure Gradio frontend for OmniAudit-GEO."""
+    if gr is None:
+        raise ImportError(
+            "Gradio is not installed. OmniAudit-GEO has migrated to Streamlit. "
+            "Please run: streamlit run streamlit_app.py"
+        )
     with gr.Blocks(title="OmniAudit-GEO — Brand AI-Readiness Platform") as demo:
         gr.HTML(f"<style>{CUSTOM_CSS}</style>")
         # Top Minimalist Navigation & Brand Header

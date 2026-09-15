@@ -28,14 +28,14 @@ setup(
         "web": [
             "fastapi>=0.115.0",
             "uvicorn>=0.30.0",
-            "gradio>=6.0.0",
+            "streamlit>=1.38.0",
             "httpx>=0.27.0",
             "pydantic>=2.7.0",
         ],
         "dev": [
             "fastapi>=0.115.0",
             "uvicorn>=0.30.0",
-            "gradio>=6.0.0",
+            "streamlit>=1.38.0",
             "httpx>=0.27.0",
             "pydantic>=2.7.0",
         ],

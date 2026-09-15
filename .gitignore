@@ -14,4 +14,4 @@ env/
 *.egg-info/
 *.mp4
 !omniaudit_terminal_demo.mp4
-
+.vscode/

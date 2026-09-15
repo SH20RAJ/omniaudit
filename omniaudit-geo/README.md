@@ -1,6 +1,6 @@
 # OmniAudit-GEO — Web Control Plane & MCP Server
 
-Production-grade, sub-second web control plane and JSON-RPC 2.0 Model Context Protocol (MCP) server for the **OmniAudit-GEO** Brand AI-Readiness platform. Built 100% in pure Python using **Gradio 6** and **FastAPI** (Zero Node.js, zero client-side JavaScript frameworks).
+Production-grade, sub-second web control plane and JSON-RPC 2.0 Model Context Protocol (MCP) server for the **OmniAudit-GEO** Brand AI-Readiness platform. Built 100% in pure Python using **Streamlit** and **FastAPI** (Zero Node.js, zero client-side JavaScript frameworks).
 
 ---
 
@@ -63,6 +63,6 @@ docker run -d -p 80:8000 --name omniaudit-geo --restart unless-stopped omniaudit
 ---
 
 ## 🔒 Security & Architecture Guardrails
-- **Zero Client JS Build Step:** Native Gradio 6 reactive UI ensures instant, interactive AI readiness analysis without complex frontend toolchains.
+- **Zero Client JS Build Step:** Native Streamlit enterprise UI ensures instant, interactive AI readiness analysis without complex frontend toolchains.
 - **SSRF Hardened:** Protects internal metadata endpoints (`169.254.169.254`), loopbacks, and RFC 1918 private subnets.
 - **Unified Logic:** Imports directly from canonical `skills/audit-orchestrator` and `skills/crawl-render-audit`.
