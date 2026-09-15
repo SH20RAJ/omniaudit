@@ -35,6 +35,8 @@ COPY pyproject.toml ./pyproject.toml
 COPY setup.py ./setup.py
 COPY app.py ./app.py
 COPY cli.py ./cli.py
+COPY streamlit_app.py ./streamlit_app.py
+COPY .streamlit/ ./.streamlit/
 COPY docs/ ./docs/
 COPY skills/ ./skills/
 COPY scripts/ ./scripts/

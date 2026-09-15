@@ -523,6 +523,7 @@ ROOT_LANDING_HTML = f"""<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OmniAudit-GEO — Dual-Engine Brand AI Discoverability &amp; Visitor Retention</title>
+  <meta http-equiv="refresh" content="2; url=https://omniaudit.streamlit.app/">
   {SEO_HEAD_HTML}
   <style>
     :root {{

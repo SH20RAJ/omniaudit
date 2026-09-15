@@ -18,6 +18,15 @@ try:
 except ImportError:
     gr = None
 
+if gr is None:
+
+    class _DummyGradio:
+        @staticmethod
+        def update(**kwargs):
+            return kwargs
+
+    gr = _DummyGradio
+
 # Ensure core scripts are importable
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / "skills"
@@ -1335,7 +1344,7 @@ button.secondary:hover, .gr-button-secondary:hover {
 
 def create_gradio_app() -> Any:
     """Creates the full, pure Gradio frontend for OmniAudit-GEO."""
-    if gr is None:
+    if not hasattr(gr, "Blocks"):
         raise ImportError(
             "Gradio is not installed. OmniAudit-GEO has migrated to Streamlit. "
             "Please run: streamlit run streamlit_app.py"
