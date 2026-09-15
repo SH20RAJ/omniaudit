@@ -311,6 +311,21 @@ def get_docs_catalog() -> list[dict[str, Any]]:
     return DOCS_REGISTRY
 
 
+def get_categories() -> list[str]:
+    """Returns an ordered list of unique document categories in DOCS_REGISTRY."""
+    cats: list[str] = []
+    for item in DOCS_REGISTRY:
+        cat = item.get("category", "General")
+        if cat not in cats:
+            cats.append(cat)
+    return cats
+
+
+def get_docs_by_category(category: str) -> list[dict[str, Any]]:
+    """Returns all document metadata items matching the given category."""
+    return [item for item in DOCS_REGISTRY if item.get("category") == category]
+
+
 DOC_CONTENT_CACHE: dict[str, str] = {}
 
 

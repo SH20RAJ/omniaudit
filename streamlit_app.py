@@ -1239,7 +1239,16 @@ elif nav_selection == "🔌 Developer & MCP":
         tool_url = st.text_input("Target URL", value="https://linear.app")
         if st.button("🚀 Invoke MCP Tool", type="primary"):
             with st.spinner(f"Invoking {tool_name}..."):
-                res = execute_guarded_mcp(tool_name, {"url": tool_url})
+                rpc_req = {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "tools/call",
+                    "params": {
+                        "name": tool_name,
+                        "arguments": {"url": tool_url},
+                    },
+                }
+                res = execute_guarded_mcp(rpc_req, client_ip="streamlit-dev")
                 st.json(res)
 
 
