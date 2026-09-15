@@ -920,7 +920,7 @@ def build_documentation_portal_html(initial_doc_id: str = "getting-started") -> 
       </a>
     </div>
     <nav class="nav-links">
-      <a href="/" class="nav-link primary">🔍 Launch Audit App</a>
+      <a href="https://omniaudit.streamlit.app/" target="_blank" class="nav-link primary">⚡ Live Streamlit App</a>
       <a href="/api/docs" class="nav-link hide-mobile">📑 OpenAPI Swagger</a>
       <a href="/api/mcp" class="nav-link hide-mobile">🤖 MCP Endpoint</a>
       <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" class="nav-link">⭐ GitHub</a>

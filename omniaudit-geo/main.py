@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 OmniAudit-GEO — Fast, Deterministic Web Control Plane & MCP API.
-Powered by FastAPI & Gradio 6. Shares the exact same canonical Python audit engine,
+Powered by FastAPI & Streamlit. Shares the exact same canonical Python audit engine,
 safe_fetch, and MCP server as the CLI and skills marketplace.
 100% pure Python. Zero React, zero JavaScript build dependencies.
 """
@@ -318,14 +318,14 @@ async def benchmarks_endpoint():
 
 
 # -------------------------------------------------------------
-# Web Navigation & Redirect Handlers (Frontend is Pure Gradio)
+# Web Navigation & Redirect Handlers (Frontend is Streamlit)
 # -------------------------------------------------------------
 
 REDIRECT_HTML_CONTENT = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/">
+  <meta http-equiv="refresh" content="0; url=https://omniaudit.streamlit.app/">
 {SEO_HEAD_HTML}
   <style>
     body {{
@@ -363,12 +363,12 @@ REDIRECT_HTML_CONTENT = f"""<!DOCTYPE html>
 </head>
 <body>
   <div class="card">
-    <h2 style="margin-top:0; color:#ffffff;">OmniAudit<span style="color:#eb1000;">.GEO</span></h2>
-    <p style="color:#94a3b8; line-height:1.5;">Navigating to the unified Gradio interface...</p>
-    <p><a href="/">Click here to open OmniAudit-GEO</a></p>
+    <h2 style="margin-top:0; color:#ffffff;">OmniAudit<span style="color:#38bdf8;">.GEO</span></h2>
+    <p style="color:#94a3b8; line-height:1.5;">Navigating to the unified Streamlit interface...</p>
+    <p><a href="https://omniaudit.streamlit.app/">Click here to open OmniAudit-GEO on Streamlit</a></p>
   </div>
 {NOSCRIPT_SEMANTIC_BODY}
-  <script>window.location.replace('/');</script>
+  <script>window.location.replace('https://omniaudit.streamlit.app/');</script>
 </body>
 </html>
 """
@@ -634,7 +634,7 @@ ROOT_LANDING_HTML = f"""<!DOCTYPE html>
     <h1>OmniAudit<span style="color: var(--accent);">.GEO</span></h1>
     <p class="lead">Dual-Engine Brand AI Discoverability (ACPI) &amp; Visitor Retention (CRS) Audit Platform. Auditing machine crawlers and human readability with zero cloud dependencies.</p>
     <div class="actions">
-      <a href="http://localhost:8501" class="btn btn-primary">⚡ Launch Streamlit App</a>
+      <a href="https://omniaudit.streamlit.app/" target="_blank" class="btn btn-primary">⚡ Launch Live Streamlit App</a>
       <a href="/docs" class="btn btn-secondary">📖 Documentation Portal</a>
       <a href="/api/docs" class="btn btn-secondary">🔌 OpenAPI REST Docs</a>
     </div>

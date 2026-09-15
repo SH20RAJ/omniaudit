@@ -445,6 +445,15 @@ with st.sidebar:
             <div>• <strong>Benchmarks:</strong> 16/16 Passed (100%)</div>
             <div>• <strong>Gates:</strong> 6/6 CI Verified</div>
         </div>
+        <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-top: 14px; margin-bottom: 8px;">
+            Live Deployments
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+            <a href="https://omniaudit.streamlit.app/" target="_blank" style="color: #ff4b4b; text-decoration: none; font-weight: 600;">⚡ Streamlit Cloud (Live App) ↗</a>
+            <a href="https://omniaudit-geo.onrender.com/docs" target="_blank" style="color: #38bdf8; text-decoration: none;">📖 Documentation Portal ↗</a>
+            <a href="https://omniaudit-geo.onrender.com/api/docs" target="_blank" style="color: #38bdf8; text-decoration: none;">🔌 OpenAPI REST Swagger ↗</a>
+            <a href="https://github.com/SH20RAJ/omniaudit" target="_blank" style="color: #94a3b8; text-decoration: none;">⭐ GitHub Repository ↗</a>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -1259,16 +1268,52 @@ elif nav_selection == "📖 Documentation Portal":
     st.markdown(
         """
         <div style="margin-bottom: 24px;">
-            <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">
-                Documentation Portal
-            </h1>
-            <p style="color: #94a3b8; font-size: 1rem; margin: 0;">
-                Browse canonical engineering guides, skill specifications, root protocols, and historical archives.
-            </p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">
+                        Documentation Portal
+                    </h1>
+                    <p style="color: #94a3b8; font-size: 1rem; margin: 0;">
+                        34 Canonical engineering guides, specialist skill specifications, root protocols, and historical archives.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="https://omniaudit-geo.onrender.com/docs" target="_blank" style="text-decoration: none;">
+                        <span class="badge badge-cyan" style="cursor: pointer; padding: 6px 14px; font-size: 12px;">🌐 Standalone Docs Portal ↗</span>
+                    </a>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
+    # Quick Essential Guide Buttons
+    st.markdown(
+        "<div style='font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px; font-weight: 600;'>⚡ Essential Guides:</div>",
+        unsafe_allow_html=True,
+    )
+    q_cols = st.columns(6)
+    with q_cols[0]:
+        if st.button("🚀 Getting Started", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "getting-started"
+    with q_cols[1]:
+        if st.button("📘 Beginner (ELI5)", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "beginners"
+    with q_cols[2]:
+        if st.button("🏛️ Architecture", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "architecture"
+    with q_cols[3]:
+        if st.button("🏆 Round 4 Showcase", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "round4-showcase"
+    with q_cols[4]:
+        if st.button("🎤 Executive Pitch", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "pitch"
+    with q_cols[5]:
+        if st.button("⚖️ Jury Defense", use_container_width=True):
+            st.session_state["doc_id_to_load"] = "judging"
+
+    st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
     doc_col1, doc_col2 = st.columns([1, 2])
     with doc_col1:
@@ -1280,7 +1325,17 @@ elif nav_selection == "📖 Documentation Portal":
             available_docs = get_docs_by_category(chosen_cat)
 
         doc_titles = [f"{d.get('icon', '📄')} {d.get('title', '')}" for d in available_docs]
-        chosen_doc_title = st.selectbox("Select Document", options=doc_titles)
+
+        # Check if preselected via quick pills
+        target_doc_id = st.session_state.get("doc_id_to_load")
+        default_idx = 0
+        if target_doc_id:
+            for i, d in enumerate(available_docs):
+                if d.get("id") == target_doc_id:
+                    default_idx = i
+                    break
+
+        chosen_doc_title = st.selectbox("Select Document", options=doc_titles, index=default_idx)
 
         selected_doc = None
         for d in available_docs:
@@ -1290,29 +1345,71 @@ elif nav_selection == "📖 Documentation Portal":
 
     with doc_col2:
         search_query = st.text_input(
-            "🔍 Search Documentation Content", placeholder="Search keywords (e.g. ACPI, SSRF, robots, jury)..."
+            "🔍 Search Across All 34 Documents",
+            placeholder="Search keywords (e.g. ACPI, SSRF, robots, jury, Flesch, JSON-LD)...",
         )
 
     if search_query and search_query.strip():
         search_results = search_docs(search_query.strip())
-        st.markdown(f"**Search Results for:** `{search_query}` ({len(search_results)} found)")
+        st.markdown(f"**Found {len(search_results)} documents matching:** `{search_query}`")
         for res in search_results:
-            with st.expander(f"{res.get('icon', '📄')} {res.get('title', '')} ({res.get('category', '')})"):
-                st.markdown(res.get("content", "")[:1200] + "\n\n*(preview truncated)*")
+            with st.expander(
+                f"{res.get('icon', '📄')} {res.get('title', '')} — {res.get('category', '')} ({res.get('rel_path', '')})"
+            ):
+                st.markdown(f"**Description:** {res.get('description', '')}")
+                st.markdown("---")
+                content_preview = res.get("content", "")[:1500]
+                st.markdown(
+                    content_preview
+                    + ("\n\n*(content preview truncated...)*" if len(res.get("content", "")) > 1500 else "")
+                )
+                if st.button(f"📖 Read Full '{res.get('title', '')}'", key=f"btn_search_{res.get('id')}"):
+                    st.session_state["doc_id_to_load"] = res.get("id")
+                    st.rerun()
     elif selected_doc:
         doc_obj = get_doc_by_id(selected_doc.get("id", ""))
         if doc_obj:
+            content = doc_obj.get("content", "No content found.")
+            words_count = len(content.split())
+            read_time_min = max(1, round(words_count / 220))
+            rel_path = doc_obj.get("rel_path", "")
+            gh_url = f"https://github.com/SH20RAJ/omniaudit/blob/main/{rel_path}"
+
             st.markdown(
                 f"""
-                <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 14px 18px; margin: 16px 0;">
-                    <div style="font-size: 1.25rem; font-weight: 700; color: #f8fafc;">
-                        {doc_obj.get("icon", "📄")} {doc_obj.get("title", "")}
-                    </div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
-                        Path: <code>{doc_obj.get("rel_path", "")}</code> | Category: <strong>{doc_obj.get("category", "")}</strong>
+                <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 18px 24px; margin: 16px 0 24px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <div style="font-size: 1.4rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">
+                                {doc_obj.get("icon", "📄")} {doc_obj.get("title", "")}
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <span class="badge badge-cyan">{doc_obj.get("category", "")}</span>
+                                <span style="font-size: 12px; color: #94a3b8;"><code>{rel_path}</code></span>
+                                <span style="font-size: 12px; color: #64748b;">•</span>
+                                <span style="font-size: 12px; color: #94a3b8;">{words_count:,} words</span>
+                                <span style="font-size: 12px; color: #64748b;">•</span>
+                                <span style="font-size: 12px; color: #94a3b8;">~{read_time_min} min read</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            st.markdown(doc_obj.get("content", "No content found."))
+
+            # Action bar
+            act_col1, act_col2, _ = st.columns([2, 2, 4])
+            with act_col1:
+                st.download_button(
+                    "⬇️ Download Markdown",
+                    data=content,
+                    file_name=Path(rel_path).name,
+                    mime="text/markdown",
+                    use_container_width=True,
+                )
+            with act_col2:
+                st.link_button("⭐ View on GitHub", gh_url, use_container_width=True)
+
+            st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
+            st.markdown(content)

@@ -10,7 +10,8 @@
   <a href="https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit"><img src="https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fomniaudit&countColor=%23263759&style=flat" alt="Visitors" /></a>
   <a href="https://github.com/SH20RAJ/omniaudit/actions/workflows/verify.yml"><img src="https://img.shields.io/github/actions/workflow/status/SH20RAJ/omniaudit/verify.yml?branch=main&label=6-Gate%20Verification&style=flat-square&logo=githubactions&logoColor=white" alt="Verification" /></a>
   <a href="https://github.com/SH20RAJ/omniaudit/actions/workflows/publish-container.yml"><img src="https://img.shields.io/github/actions/workflow/status/SH20RAJ/omniaudit/publish-container.yml?branch=main&label=GHCR%20Build&style=flat-square&logo=docker&logoColor=white" alt="Container" /></a>
-  <a href="https://omniaudit-geo.onrender.com/"><img src="https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://omniaudit.streamlit.app/"><img src="https://img.shields.io/badge/Live%20App-Streamlit%20Cloud-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" alt="Live Streamlit App" /></a>
+  <a href="https://omniaudit-geo.onrender.com/"><img src="https://img.shields.io/badge/API-Render-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Live Render API" /></a>
   <a href="https://omniaudit-geo.onrender.com/docs"><img src="https://img.shields.io/badge/Docs-Live%20Portal-6366F1?style=flat-square&logo=gitbook&logoColor=white" alt="Documentation Portal" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square" alt="License" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
@@ -24,7 +25,9 @@
 > **Adobe University Hackathon 2026 (CRP) — Round 3 Official Team Submission**<br>
 > **Team:** Shaswat Raj ([@sh20raj](https://github.com/sh20raj)) & Prithvi ([@chikolavosaki-sys](https://github.com/chikolavosaki-sys))<br>
 > **Challenge:** [Unstop - Adobe University Hackathon 2026](https://unstop.com/hackathons/crp-adobe-university-hackathon-2026-adobe-1715333)<br>
-> **Interactive Documentation Portal:** [https://omniaudit-geo.onrender.com/docs](https://omniaudit-geo.onrender.com/docs)<br>
+> **⚡ Live Streamlit Web App:** [https://omniaudit.streamlit.app/](https://omniaudit.streamlit.app/)<br>
+> **📖 Interactive Documentation Portal:** [https://omniaudit-geo.onrender.com/docs](https://omniaudit-geo.onrender.com/docs)<br>
+> **🔌 FastAPI REST Control Plane:** [https://omniaudit-geo.onrender.com/](https://omniaudit-geo.onrender.com/)<br>
 > **Essential Guides:** [📘 Beginner's Guide (ELI5)](./beginners.md) | [🏆 Round 4 Showcase & Defense](./ROUND4_SHOWCASE.md) | [🎤 Executive Pitch & Q&A](./pitch.md)
 
 ---
